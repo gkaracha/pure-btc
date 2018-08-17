@@ -14,6 +14,9 @@ import Data.Bits
 import Data.List.Split (chunksOf)
 import Data.Array (Array, listArray, (!), array)
 
+import qualified Types as T
+import qualified Data.ByteString as BS
+
 -- Conversions and Padding Utilities
 -- ============================================================================
 
@@ -171,6 +174,13 @@ sha256 mn = loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
 -- Interface and Tests
 -- ============================================================================
 
+sha256_bytestring :: BS.ByteString -> String
+sha256_bytestring msg = concat
+                      [ showFullHex h1, showFullHex h2, showFullHex h3, showFullHex h4
+                      , showFullHex h5, showFullHex h6, showFullHex h7, showFullHex h8 ]
+  where
+    (h1,h2,h3,h4,h5,h6,h7,h8) = sha256 $ padChunkMsg msg
+
 -- TESTING
 sha256_string :: String -> String
 sha256_string msg = concat
@@ -180,8 +190,11 @@ sha256_string msg = concat
     (h1,h2,h3,h4,h5,h6,h7,h8) = sha256 $ prepMsg msg
 
 -- TESTING
-sha256_io :: String -> IO ()
-sha256_io msg = putStrLn (sha256_string msg)
+sha256_io_string :: String -> IO ()
+sha256_io_string msg = putStrLn (sha256_string msg)
+
+sha256_io_bytestring :: BS.ByteString -> IO ()
+sha256_io_bytestring msg = putStrLn (sha256_bytestring msg)
 
 -- TESTING
 sha256_test :: IO ()
@@ -288,4 +301,25 @@ import Data.ByteString
 -- ||                         let b' = a                 in
 -- ||                         let a' = t1 + t2           in
 -- ||                         aux (j+1) (a',b',c',d',e',f',g',h')
+
+-- | Padding for SHA256 hashing (TODO: Move to SHA256.hs)
+padBS :: BS.ByteString -> BS.ByteString
+padBS bs = BS.concat [ bs                                           -- message
+                     , BS.pack (0x80 : replicate (no_bytes-1) 0x00) -- 1 0..0
+                     , BS.pack (T.w64_bytes (fromIntegral len)) ]     -- 64
+  where
+    -- Length of message
+    len :: Int
+    len = 8 * BS.length bs
+
+    -- Number of bytes to add (1 0..0)
+    no_bytes | (d,r) <- (comp_k len+1) `quotRem` 8
+             = if r /= 0 then error "padBS: what??" else d
+
+-- | Partition a message into chunks of 512 bits, .....
+chunkMsg :: BS.ByteString -> [[Word32]]
+chunkMsg = map (map T.bs_w32 . T.chunksOf 4) . T.chunksOf 64 -- msg = undefined
+
+padChunkMsg :: BS.ByteString -> [[Word32]]
+padChunkMsg = chunkMsg . padBS
 
