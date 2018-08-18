@@ -1,6 +1,30 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Types where
+module Types
+( -- Re-exported from Data.Word
+  Word8, Word16, Word32, Word64
+
+  -- Conversion Functions
+, splitWord64, concatWord32s
+, splitWord32, concatWord16s
+, splitWord16, concatWord8s
+, w64_w16, w16_w64
+, w64_w8,  w8_w64
+, w32_w8,  w8_w32
+
+  -- Words of size 256 and 512 bits
+, Word256(..), Word512(..)
+
+  -- Split a ByteString in chunks
+, chunksOf
+
+  -- Read words from ByteStrings
+, bs_w8, bs_w16, bs_w32, bs_w64
+
+  -- Other utilities
+, w64_bytes
+) where
+
 {-
   The types we will use in all other modules
 -}
@@ -156,38 +180,8 @@ bs_w64 bs = case BS.unpack bs of
   [w1,w2,w3,w4,w5,w6,w7,w8] -> w8_w64 (w1,w2,w3,w4,w5,w6,w7,w8)
   _other                    -> error "bs_w64"
 
--- * Padding
--- ----------------------------------------------------------------------------
-
--- || -- | Padding for SHA256 hashing (TODO: Move to SHA256.hs)
--- || padBS :: BS.ByteString -> BS.ByteString
--- || padBS bs = BS.concat [ bs                                           -- message
--- ||                      , BS.pack (0x80 : replicate (no_bytes-1) 0x00) -- 1 0..0
--- ||                      , BS.pack (w64_bytes (fromIntegral len)) ]     -- 64
--- ||   where
--- ||     -- Length of message
--- ||     len :: Int
--- ||     len = 8 * BS.length bs
--- ||
--- ||     -- Number of bytes to add (1 0..0)
--- ||     no_bytes | (d,r) <- (comp_k len+1) `quotRem` 8
--- ||              = if r /= 0 then error "padBS: what??" else d
-
--- | comp_k :: Int -> Int
--- | comp_k l = case mod (l + 1 + 64) 512 of
--- |              0 -> 0
--- |              n -> 512 - n
-
 w64_bytes :: Word64 -> [Word8]
 w64_bytes w | (w1,w2,w3,w4,w5,w6,w7,w8) <- w64_w8 w = [w1,w2,w3,w4,w5,w6,w7,w8]
-
-
--- || -- | Partition a message into chunks of 512 bits, .....
--- || chunkMsg :: BS.ByteString -> [[Word32]]
--- || chunkMsg = map (map bs_w32 . chunksOf 4) . chunksOf 64 -- msg = undefined
--- ||
--- || padChunkMsg :: BS.ByteString -> [[Word32]]
--- || padChunkMsg = chunkMsg . padBS
 
 -- TODO: We need to give instances for a gazillion
 --       classes. I guess we'll do it eventually.
