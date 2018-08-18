@@ -119,17 +119,17 @@ ch x y z = (x .&. y) `xor` (complement x .&. z)
 maj :: Word32 -> Word32 -> Word32 -> Word32
 maj x y z = (x .&. y) `xor` (x .&. z) `xor` (y .&. z)
 
-uSigma0 :: Word32 -> Word32
-uSigma0 x = (x `rotateR` 2) `xor` (x `rotateR` 13) `xor` (x `rotateR` 22)
+uS0 :: Word32 -> Word32
+uS0 x = (x `rotateR` 2) `xor` (x `rotateR` 13) `xor` (x `rotateR` 22)
 
-uSigma1 :: Word32 -> Word32
-uSigma1 x = (x `rotateR` 6) `xor` (x `rotateR` 11) `xor` (x `rotateR` 25)
+uS1 :: Word32 -> Word32
+uS1 x = (x `rotateR` 6) `xor` (x `rotateR` 11) `xor` (x `rotateR` 25)
 
-lSigma0 :: Word32 -> Word32
-lSigma0 x = (x `rotateR` 7) `xor` (x `rotateR` 18) `xor` (x `shiftR` 3)
+lS0 :: Word32 -> Word32
+lS0 x = (x `rotateR` 7) `xor` (x `rotateR` 18) `xor` (x `shiftR` 3)
 
-lSigma1 :: Word32 -> Word32
-lSigma1 x = (x `rotateR` 17) `xor` (x `rotateR` 19) `xor` (x `shiftR` 10)
+lS1 :: Word32 -> Word32
+lS1 x = (x `rotateR` 17) `xor` (x `rotateR` 19) `xor` (x `shiftR` 10)
 
 -- Main Hashing Function
 -- ============================================================================
@@ -146,9 +146,9 @@ sha256 mn = loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
       where
         w :: Array Int Word32
         w = array (0,63) ((zip [0..15] block)
-                          ++ [ (j, (lSigma1 (w!(j-2)))
+                          ++ [ (j, (lS1 (w!(j-2)))
                                    + (w!(j-7))
-                                   + (lSigma0 (w!(j-15)))
+                                   + (lS0 (w!(j-15)))
                                    + (w!(j-16)))
                              | j <- [16..63] ])
 
@@ -157,8 +157,8 @@ sha256 mn = loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
             -> (Word32,Word32,Word32,Word32,Word32,Word32,Word32,Word32)  -- resulting a..h
         aux j (a,b,c,d,e,f,g,h)
           | j > 63    = (a,b,c,d,e,f,g,h)
-          | otherwise = let t1 = h + (uSigma1 e) + (ch e f g) + (k64 ! j) + (w ! j) in
-                        let t2 = (uSigma0 a) + (maj a b c) in
+          | otherwise = let t1 = h + (uS1 e) + (ch e f g) + (k64 ! j) + (w ! j) in
+                        let t2 = (uS0 a) + (maj a b c) in
                         aux (j+1) (t1+t2,a,b,c,d+t1,e,f,g)
 
     -- | Main Loop
@@ -284,23 +284,6 @@ import Data.ByteString
 
 -- a = array (1,100) ((1,1) : [(i, i * a!(i-1)) | i <- [2..100]])
 
--- | ORIGINAL VERSION
--- ||         aux :: Int                                                        -- iteration (j)
--- ||             -> (Word32,Word32,Word32,Word32,Word32,Word32,Word32,Word32)  -- current a..h
--- ||             -> (Word32,Word32,Word32,Word32,Word32,Word32,Word32,Word32)  -- resulting a..h
--- ||         aux j (a,b,c,d,e,f,g,h)
--- ||           | j > 63    = (a,b,c,d,e,f,g,h)
--- ||           | otherwise = let t1 = h + (uSigma1 e) + (ch e f g) + (k64 ! j) + (w ! j) in
--- ||                         let t2 = (uSigma0 a) + (maj a b c) in
--- ||                         let h' = g                 in
--- ||                         let g' = f                 in
--- ||                         let f' = e                 in
--- ||                         let e' = d + t1            in
--- ||                         let d' = c                 in
--- ||                         let c' = b                 in
--- ||                         let b' = a                 in
--- ||                         let a' = t1 + t2           in
--- ||                         aux (j+1) (a',b',c',d',e',f',g',h')
 
 -- | Padding for SHA256 hashing (TODO: Move to SHA256.hs)
 padBS :: BS.ByteString -> BS.ByteString
@@ -318,8 +301,47 @@ padBS bs = BS.concat [ bs                                           -- message
 
 -- | Partition a message into chunks of 512 bits, .....
 chunkMsg :: BS.ByteString -> [[Word32]]
-chunkMsg = map (map T.bs_w32 . T.chunksOf 4) . T.chunksOf 64 -- msg = undefined
+chunkMsg = map (map T.bs_w32 . T.chunksOf 4) . T.chunksOf 64
 
 padChunkMsg :: BS.ByteString -> [[Word32]]
 padChunkMsg = chunkMsg . padBS
+
+-- Main Hashing Function
+-- ============================================================================
+
+
+-- TODO: Change the rep of Word512 to an array of Word32
+
+buildW :: T.Word512 -> Array Int Word32
+buildW (T.W512 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15) = w
+  where
+    block = [w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15]
+    w     = array (0,63) ((zip [0..15] block)
+                          ++ [ (j, lS1 (w!(j-2)) + (w!(j-7)) + lS0 (w!(j-15)) + (w!(j-16)))
+                             | j <- [16..63] ])
+
+sha256w :: [T.Word512] -> T.Word256
+sha256w mn = loop mn (T.W256 h01 h02 h03 h04 h05 h06 h07 h08)
+  where
+    -- | SHA256 Compression Function
+    comp_fn :: T.Word512 -> T.Word256 -> T.Word256
+    comp_fn block hs = aux 0 hs
+      where
+        w :: Array Int Word32
+        w = buildW block
+
+        aux :: Int -> T.Word256 -> T.Word256
+        aux j (T.W256 a b c d e f g h)
+          | j > 63    = T.W256 a b c d e f g h
+          | otherwise = let t1 = h + (uS1 e) + (ch e f g) + (k64 ! j) + (w ! j) in
+                        let t2 = (uS0 a) + (maj a b c) in
+                        aux (j+1) (T.W256 (t1+t2) a b c (d+t1) e f g)
+
+    -- | Main Loop
+    loop :: [T.Word512] -> T.Word256 -> T.Word256
+    loop [] (T.W256 h1 h2 h3 h4 h5 h6 h7 h8)
+      = T.W256 h1 h2 h3 h4 h5 h6 h7 h8
+    loop (block:blocks) (T.W256 h1 h2 h3 h4 h5 h6 h7 h8)
+      = loop blocks (T.W256 (a+h1) (b+h2) (c+h3) (d+h4) (e+h5) (f+h6) (g+h7) (h+h8))
+      where (T.W256 a b c d e f g h) = comp_fn block (T.W256 h1 h2 h3 h4 h5 h6 h7 h8)
 
