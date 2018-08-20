@@ -9,7 +9,6 @@ import Data.Function (on)
 import Data.Ratio ((%))
 import Word128
 
-
 -- * Word256, masks, and utilities
 -- ----------------------------------------------------------------------------
 
