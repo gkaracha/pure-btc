@@ -80,50 +80,52 @@ instance Split Word512 where
 class Bytes a where
   toBytes   :: a -> [Word8]
   fromBytes :: [Word8] -> a
-  byteLen   :: a -> Int
+  noBytes   :: a -> Int
+  toByteString :: a -> BS.ByteString
+  toByteString = BS.pack . toBytes -- default
 
 instance Bytes Word8 where
   toBytes w = [w]
   fromBytes = fromBytesGen
-  byteLen _ = 1
+  noBytes _ = 1
 
 instance Bytes Word16 where
   toBytes w = [w1,w2]
     where (w1,w2) = toHalves w
   fromBytes = fromBytesGen
-  byteLen _ = 2
+  noBytes _ = 2
 
 instance Bytes Word32 where
   toBytes w = toBytes w1 ++ toBytes w2
     where (w1,w2) = toHalves w
   fromBytes = fromBytesGen
-  byteLen _ = 4
+  noBytes _ = 4
 
 instance Bytes Word64 where
   toBytes w = toBytes w1 ++ toBytes w2
     where (w1,w2) = toHalves w
   fromBytes = fromBytesGen
-  byteLen _ = 8
+  noBytes _ = 8
 
 instance Bytes Word128 where
   toBytes   = w128ToBytes
   fromBytes = fromBytesGen
-  byteLen _ = 16
+  noBytes _ = 16
 
 instance Bytes Word256 where
   toBytes   = w256ToBytes
   fromBytes = fromBytesGen
-  byteLen _ = 32
+  noBytes _ = 32
 
 instance Bytes Word512 where
   toBytes   = w512ToBytes
   fromBytes = fromBytesGen
-  byteLen _ = 64
+  noBytes _ = 64
 
 instance Bytes BS.ByteString where
   toBytes   = BS.unpack
   fromBytes = BS.pack
-  byteLen   = BS.length
+  noBytes   = BS.length
 
 -- TODO: The toBytes implementations are inefficient. CPS them
 
