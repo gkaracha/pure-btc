@@ -3,9 +3,8 @@
 
 -- Re-export all word types
 module Words
-( module Data.Word
-, module Data.Bits
-, Word128, Word256, Word512
+( module Data.Bits
+, Word8, Word16, Word32, Word64, Word128, Word256, Word512
 , w128ToInteger, w256ToInteger, w512ToInteger -- TODO: No 'Integral' instances for these.
 , Split(..), Bytes(..), Words(..)
 ) where
