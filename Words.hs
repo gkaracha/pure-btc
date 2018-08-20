@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 
 -- Re-export all word types
 module Words
@@ -80,41 +80,50 @@ instance Split Word512 where
 class Bytes a where
   toBytes   :: a -> [Word8]
   fromBytes :: [Word8] -> a
+  byteLen   :: a -> Int
 
 instance Bytes Word8 where
   toBytes w = [w]
   fromBytes = fromBytesGen
+  byteLen _ = 1
 
 instance Bytes Word16 where
   toBytes w = [w1,w2]
     where (w1,w2) = toHalves w
   fromBytes = fromBytesGen
+  byteLen _ = 2
 
 instance Bytes Word32 where
   toBytes w = toBytes w1 ++ toBytes w2
     where (w1,w2) = toHalves w
   fromBytes = fromBytesGen
+  byteLen _ = 4
 
 instance Bytes Word64 where
   toBytes w = toBytes w1 ++ toBytes w2
     where (w1,w2) = toHalves w
   fromBytes = fromBytesGen
+  byteLen _ = 8
 
 instance Bytes Word128 where
-  toBytes = w128ToBytes
+  toBytes   = w128ToBytes
   fromBytes = fromBytesGen
+  byteLen _ = 16
 
 instance Bytes Word256 where
-  toBytes = w256ToBytes
+  toBytes   = w256ToBytes
   fromBytes = fromBytesGen
+  byteLen _ = 32
 
 instance Bytes Word512 where
-  toBytes = w512ToBytes
+  toBytes   = w512ToBytes
   fromBytes = fromBytesGen
+  byteLen _ = 64
 
 instance Bytes BS.ByteString where
   toBytes   = BS.unpack
   fromBytes = BS.pack
+  byteLen   = BS.length
 
 -- TODO: The toBytes implementations are inefficient. CPS them
 
@@ -137,12 +146,42 @@ class Words a where
   toWords   :: a -> [Word32]
   fromWords :: [Word32] -> a
 
-instance Words Word32  -- TODO
-instance Words Word64  -- TODO
-instance Words Word128 -- TODO
-instance Words Word256 -- TODO
-instance Words Word512 -- TODO
+instance Words Word32 where
+  toWords w = [w]
+  fromWords = fromWordsGen
 
+instance Words Word64 where
+  toWords w = [w1,w2]
+    where (w1,w2) = toHalves w
+  fromWords = fromWordsGen
+
+instance Words Word128 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
+
+instance Words Word256 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
+
+instance Words Word512 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
+
+-- TODO: ByteString cannot be an instance of this class cause it's not always
+--       of the proper length.
+
+-- Generic implementation of 'fromWords' for types whose representation is finite
+fromWordsGen :: (Num b, FiniteBits b) => [Word32] -> b
+fromWordsGen ws
+  = ws `ensureLength` (finiteBitSize result `div` 32) `seq` result
+  where result = fromInteger
+               $ foldl' (\a w -> (a `rotateL` 32) .|. fromIntegral w) 0 ws
+
+-- Generic implementation of 'toWords' for types that are an instance of Split
+toWordsGen :: (Words (Half a), Split a) => a -> [Word32]
+toWordsGen w = toWords w1 ++ toWords w2
+  where
+    (w1,w2) = toHalves w
 
 -- || -- * Parse ByteStrings as words
 -- || -- ----------------------------------------------------------------------------
