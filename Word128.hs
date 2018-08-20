@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word128 (Word128) where
+module Word128 (Word128, w128ToW64s, w64sToW128, w128ToBytes, w128ToInteger) where
 
 import Data.Word
 import Data.Bits
-import Convert
 import Data.Function (on)
 import Data.Ratio ((%))
+
 
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -25,6 +25,7 @@ mask128L = 0xFFFFFFFFFFFFFFFF0000000000000000
 mask128R :: Integer
 mask128R = 0x0000000000000000FFFFFFFFFFFFFFFF
 
+-- | Cutoff for Word128
 narrow128Integer :: Integer -> Integer
 narrow128Integer i = i .&. mask128
 
@@ -80,19 +81,43 @@ instance Real Word128 where
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
-instance Split Word128 where
-  type Half Word128 = Word64
-  split (W128 i) = (pt1,pt2)
-    where
-      pt1 = fromIntegral $ (i .&. mask128L) `rotateR` 64
-      pt2 = fromIntegral $ (i .&. mask128R)
+w128ToW64s :: Word128 -> (Word64, Word64)
+w128ToW64s (W128 i) = (pt1,pt2)
+  where
+    pt1 = fromIntegral $ (i .&. mask128L) `rotateR` 64
+    pt2 = fromIntegral $ (i .&. mask128R)
 
-instance Merge Word64 where
-  type Twice Word64 = Word128
-  merge = W128 . mergeGen
+w64sToW128 :: (Word64, Word64) -> Word128
+w64sToW128 (w1,w2) = W128 (pt1 .|. pt2)
+  where
+    pt1 = fromIntegral w1 `rotateL` 64
+    pt2 = fromIntegral w2
 
-instance Bytes Word128 where
-  toBytes w = toBytes w1 ++ toBytes w2
-    where (w1,w2) = split w
-  fromBytes ws = W128 $ narrow128Integer $ fromBytesGen ws
+w128ToBytes :: Word128 -> [Word8]
+w128ToBytes (W128 i) = map fromIntegral ibytes
+  where
+    ibytes = [ (i .&. 0xFF000000000000000000000000000000) `shiftR` 120
+             , (i .&. 0x00FF0000000000000000000000000000) `shiftR` 112
+             , (i .&. 0x0000FF00000000000000000000000000) `shiftR` 104
+             , (i .&. 0x000000FF000000000000000000000000) `shiftR` 96
+             , (i .&. 0x00000000FF0000000000000000000000) `shiftR` 88
+             , (i .&. 0x0000000000FF00000000000000000000) `shiftR` 80
+             , (i .&. 0x000000000000FF000000000000000000) `shiftR` 72
+             , (i .&. 0x00000000000000FF0000000000000000) `shiftR` 64
+             , (i .&. 0x0000000000000000FF00000000000000) `shiftR` 56
+             , (i .&. 0x000000000000000000FF000000000000) `shiftR` 48
+             , (i .&. 0x00000000000000000000FF0000000000) `shiftR` 40
+             , (i .&. 0x0000000000000000000000FF00000000) `shiftR` 32
+             , (i .&. 0x000000000000000000000000FF000000) `shiftR` 24
+             , (i .&. 0x00000000000000000000000000FF0000) `shiftR` 16
+             , (i .&. 0x0000000000000000000000000000FF00) `shiftR` 8
+             , (i .&. 0x000000000000000000000000000000FF) `shiftR` 0  ]
+
+-- | instance Bytes Word128 where
+-- |   toBytes w = toBytes w1 ++ toBytes w2
+-- |     where (w1,w2) = split w
+-- |   fromBytes ws = W128 $ narrow128Integer $ fromBytesGen ws
+
+w128ToInteger :: Word128 -> Integer
+w128ToInteger = w128
 
