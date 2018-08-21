@@ -5,7 +5,7 @@
 module Words
 ( module Data.Bits
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512
-, Split(..), Bytes(..), fromByteString, Words(..)
+, Split(..), Bytes(..), fromByteString, fromByteStringUnsafe, Words(..)
 ) where
 
 import Data.Word
@@ -205,3 +205,7 @@ fromByteString bs
     result = fromInteger
            $ foldl' (\a w -> (a `shiftL` 8) .|. fromIntegral w) 0 (BS.unpack bs)
 
+fromByteStringUnsafe :: (Bytes a, Num a) => BS.ByteString -> a
+fromByteStringUnsafe bs = case fromByteString bs of
+  Just word -> word
+  Nothing   -> error "fromByteStringUnsafe: Nothing"
