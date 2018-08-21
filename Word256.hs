@@ -1,13 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word256 (Word256, w256ToW128s, w128sToW256, w256ToBytes, w256ToInteger) where
+module Word256 (Word256, w256ToW128s, w128sToW256, w256ToBytes) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Word128
+import Utils
 
 -- * Word256, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -78,6 +79,19 @@ instance Num Word256 where
 instance Real Word256 where
   toRational (W256 i) = i % 1
 
+instance Enum Word256 where
+  toEnum int
+    | int >= 0  = W256 (fromIntegral int) -- no need to mask it, it's small
+    | otherwise = toEnumError "Word256" int (minBound :: Word256, maxBound :: Word256)
+  fromEnum w@(W256 i)
+    | i <= fromIntegral (maxBound :: Int) = fromIntegral i
+    | otherwise                           = fromEnumError "Word256" w
+
+instance Integral Word256 where
+  quotRem (W256 i1) (W256 i2) = (W256 q, W256 r) -- no need to mask them
+    where (q,r) = quotRem i1 i2
+  toInteger (W256 i) = i
+
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
@@ -90,19 +104,11 @@ w256ToW128s (W256 i) = (pt1,pt2)
 w128sToW256 :: (Word128, Word128) -> Word256
 w128sToW256 (w1,w2) = W256 (pt1 .|. pt2)
   where
-    pt1 = w128ToInteger w1 `rotateL` 128
-    pt2 = w128ToInteger w2
+    pt1 = fromIntegral w1 `rotateL` 128
+    pt2 = fromIntegral w2
 
 w256ToBytes :: Word256 -> [Word8]
 w256ToBytes w = w128ToBytes w1 ++ w128ToBytes w2
   where
     (w1,w2) = w256ToW128s w
-
--- | instance Bytes Word256 where
--- |   toBytes w = toBytes w1 ++ toBytes w2
--- |     where (w1,w2) = split w
--- |   fromBytes ws = W256 $ narrow256Integer $ fromBytesGen ws
-
-w256ToInteger :: Word256 -> Integer
-w256ToInteger = w256
 

@@ -1,12 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word160 (Word160, w160ToWords, w160ToBytes, w160ToInteger) where
+module Word160 (Word160, w160ToWords, w160ToBytes) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
+import Utils
 
 -- 160 bits == 20 bytes == 40 hex digits == 5 Word32s
 
@@ -73,6 +74,19 @@ instance Num Word160 where
 instance Real Word160 where
   toRational (W160 i) = i % 1
 
+instance Enum Word160 where
+  toEnum int
+    | int >= 0  = W160 (fromIntegral int) -- no need to mask it, it's small
+    | otherwise = toEnumError "Word160" int (minBound :: Word160, maxBound :: Word160)
+  fromEnum w@(W160 i)
+    | i <= fromIntegral (maxBound :: Int) = fromIntegral i
+    | otherwise                           = fromEnumError "Word160" w
+
+instance Integral Word160 where
+  quotRem (W160 i1) (W160 i2) = (W160 q, W160 r) -- no need to mask them
+    where (q,r) = quotRem i1 i2
+  toInteger (W160 i) = i
+
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
@@ -106,7 +120,4 @@ w160ToBytes (W160 i)
     , fromIntegral $ (i .&. 0x0000000000000000000000000000000000FF0000) `shiftR` 16
     , fromIntegral $ (i .&. 0x000000000000000000000000000000000000FF00) `shiftR` 8
     , fromIntegral $ (i .&. 0x00000000000000000000000000000000000000FF) ]
-
-w160ToInteger :: Word160 -> Integer
-w160ToInteger = w160
 

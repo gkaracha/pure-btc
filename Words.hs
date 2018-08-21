@@ -5,7 +5,6 @@
 module Words
 ( module Data.Bits
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512
-, w128ToInteger, w160ToInteger, w256ToInteger, w512ToInteger -- TODO: No 'Integral' instances for these.
 , Split(..), Bytes(..), fromByteString, Words(..)
 ) where
 

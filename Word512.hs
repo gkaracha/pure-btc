@@ -1,13 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word512 (Word512, w512ToW256s, w256sToW512, w512ToBytes, w512ToInteger) where
+module Word512 (Word512, w512ToW256s, w256sToW512, w512ToBytes) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Word256
+import Utils
 
 -- * Word512, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -78,6 +79,19 @@ instance Num Word512 where
 instance Real Word512 where
   toRational (W512 i) = i % 1
 
+instance Enum Word512 where
+  toEnum int
+    | int >= 0  = W512 (fromIntegral int) -- no need to mask it, it's small
+    | otherwise = toEnumError "Word512" int (minBound :: Word512, maxBound :: Word512)
+  fromEnum w@(W512 i)
+    | i <= fromIntegral (maxBound :: Int) = fromIntegral i
+    | otherwise                           = fromEnumError "Word512" w
+
+instance Integral Word512 where
+  quotRem (W512 i1) (W512 i2) = (W512 q, W512 r) -- no need to mask them
+    where (q,r) = quotRem i1 i2
+  toInteger (W512 i) = i
+
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
@@ -90,8 +104,8 @@ w512ToW256s (W512 i) = (pt1,pt2)
 w256sToW512 :: (Word256, Word256) -> Word512
 w256sToW512 (w1,w2) = W512 (pt1 .|. pt2)
   where
-    pt1 = w256ToInteger w1 `rotateL` 256
-    pt2 = w256ToInteger w2
+    pt1 = fromIntegral w1 `rotateL` 256
+    pt2 = fromIntegral w2
 
 w512ToBytes :: Word512 -> [Word8]
 w512ToBytes w = w256ToBytes w1 ++ w256ToBytes w2
@@ -99,7 +113,4 @@ w512ToBytes w = w256ToBytes w1 ++ w256ToBytes w2
     (w1,w2) = w512ToW256s w
 
 -- TODO: Change some rotates to shifts?
-
-w512ToInteger :: Word512 -> Integer
-w512ToInteger = w512
 

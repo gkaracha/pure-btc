@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word128 (Word128, w128ToW64s, w64sToW128, w128ToBytes, w128ToInteger) where
+module Word128 (Word128, w128ToW64s, w64sToW128, w128ToBytes) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-
+import Utils
 
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -42,8 +42,8 @@ instance Ord Word128 where
   compare = compare `on` w128
 
 instance Bounded Word128 where
-  minBound = W128 0x00000000000000000000000000000000
-  maxBound = W128 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  minBound = 0x00000000000000000000000000000000
+  maxBound = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
 instance Bits Word128 where
   W128 i1  .&.  W128 i2 = W128 (i1  .&.  i2)
@@ -77,6 +77,19 @@ instance Num Word128 where
 
 instance Real Word128 where
   toRational (W128 i) = i % 1
+
+instance Enum Word128 where
+  toEnum int
+    | int >= 0  = W128 (fromIntegral int) -- no need to mask it, it's small
+    | otherwise = toEnumError "Word128" int (minBound :: Word128, maxBound :: Word128)
+  fromEnum w@(W128 i)
+    | i <= fromIntegral (maxBound :: Int) = fromIntegral i
+    | otherwise                           = fromEnumError "Word128" w
+
+instance Integral Word128 where
+  quotRem (W128 i1) (W128 i2) = (W128 q, W128 r) -- no need to mask them
+    where (q,r) = quotRem i1 i2
+  toInteger (W128 i) = i
 
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
@@ -112,12 +125,4 @@ w128ToBytes (W128 i) = map fromIntegral ibytes
              , (i .&. 0x00000000000000000000000000FF0000) `shiftR` 16
              , (i .&. 0x0000000000000000000000000000FF00) `shiftR` 8
              , (i .&. 0x000000000000000000000000000000FF) `shiftR` 0  ]
-
--- | instance Bytes Word128 where
--- |   toBytes w = toBytes w1 ++ toBytes w2
--- |     where (w1,w2) = split w
--- |   fromBytes ws = W128 $ narrow128Integer $ fromBytesGen ws
-
-w128ToInteger :: Word128 -> Integer
-w128ToInteger = w128
 
