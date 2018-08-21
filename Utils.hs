@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils (chunksOf, toEnumError, fromEnumError) where
+module Utils (chunksOf, toEnumError, fromEnumError, pair) where
 
 import Data.List (unfoldr)
 import qualified Data.ByteString as BS
@@ -25,4 +25,9 @@ fromEnumError inst_ty x
   $ "Enum.fromEnum{" ++ inst_ty ++ "}: value ("
     ++ show x ++ ") is outside of Int's bounds "
     ++ show (minBound::Int, maxBound::Int)
+
+pair :: [a] -> Maybe [(a,a)]
+pair []       = Just []
+pair (x:y:ys) = fmap ((x,y):) (pair ys)
+pair (_:_)    = Nothing
 

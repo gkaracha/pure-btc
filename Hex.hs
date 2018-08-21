@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hex where
+module Hex (Hex(..), showHexBytes, readHexDigit, readHexBytes) where
 {-
   Convert from numeric types to hex strings and vice versa.
 -}
@@ -9,67 +9,87 @@ import qualified Numeric         as N
 import qualified Data.ByteString as BS
 import Data.Char (ord)
 import Data.List (foldl')
-import Types
+import Words
+import Utils
+
+-- * Class for things that can be printed to and read as hexadecimal
+-- ----------------------------------------------------------------------------
 
 class Hex a where
   showHex :: a -> String
   readHex :: String -> a
 
 instance Hex Word8  where
-  showHex = showFiniteHex
-  readHex = readHexI
+  showHex = showHexWord8
+  readHex = readHexBytes
 
 instance Hex Word16 where
-  showHex = showFiniteHex
-  readHex = readHexI
+  showHex = showHexBytes
+  readHex = readHexBytes
 
 instance Hex Word32 where
-  showHex = showFiniteHex
-  readHex = readHexI
+  showHex = showHexBytes
+  readHex = readHexBytes
 
 instance Hex Word64 where
-  showHex = showFiniteHex
-  readHex = readHexI
+  showHex = showHexBytes
+  readHex = readHexBytes
+
+instance Hex Word128 where
+  showHex = showHexBytes
+  readHex = readHexBytes
+
+instance Hex Word160 where
+  showHex = showHexBytes
+  readHex = readHexBytes
 
 instance Hex Word256 where
-  showHex (W256 w1 w2 w3 w4 w5 w6 w7 w8) = concatMap showHex [w1,w2,w3,w4,w5,w6,w7,w8]
+  showHex = showHexBytes
+  readHex = readHexBytes
 
 instance Hex Word512 where
-  showHex (W512 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16)
-    = concatMap showHex [w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15,w16]
+  showHex = showHexBytes
+  readHex = readHexBytes
 
 instance Hex BS.ByteString where
-  showHex = concatMap showHex . BS.unpack
+  showHex = showHexBytes
+  readHex = readHexByteString
 
-class {- FiniteBits a => -} HexSize a where
-  hSize :: a -> Int
+-- * Hexadecimal printing utilities
+-- ----------------------------------------------------------------------------
 
-instance HexSize Word8   where { hSize _ = 2   }
-instance HexSize Word16  where { hSize _ = 4   }
-instance HexSize Word32  where { hSize _ = 8   }
-instance HexSize Word64  where { hSize _ = 16  }
--- Word128 ?
-instance HexSize Word256 where { hSize _ = 64  }
-instance HexSize Word512 where { hSize _ = 128 }
+-- | Show in hexadecimal anything that consists of bytes
+showHexBytes :: Bytes a => a -> String
+showHexBytes = concatMap showHexWord8 . toBytes
 
-instance HexSize BS.ByteString where
-  hSize bs = 2 * BS.length bs
+-- | Show a single byte in hexadecimal (2 hex digits)
+showHexWord8 :: Word8 -> String
+showHexWord8 w = replicate (2 - length h) '0' ++ h where h = N.showHex w ""
 
-showFiniteHex :: (Integral a, Show a, HexSize a) => a -> String
-showFiniteHex w = replicate (hSize w - length h) '0' ++ h where h = N.showHex w ""
+-- * Hexadecimal parsing utilities
+-- ----------------------------------------------------------------------------
 
-readHexI :: Integral a => String -> a
-readHexI = fromIntegral . foldl' (\acc x -> 16*acc + readHexDigit x) 0
+readHexBytes :: (Num a, Bytes a) => String -> a
+readHexBytes str
+  | noBytes result * 2 == length str = result -- each byte corresponds to two hex digits
+  | otherwise = error "readHexBytes: length mismatch"
+  where
+    result = fromInteger
+           $ foldl' (\acc x -> 16*acc + readHexDigit x) 0 str
 
-ensureLength :: String -> Int -> ()
-ensureLength s i = if length s == i then () else error "ensureLength failed"
+readHexByteString :: String -> BS.ByteString
+readHexByteString str
+  | Just ps <- pair str = fromBytes (map fn ps)
+  | otherwise = error "readHexByteString: length mismatch"
+  where
+    fn (c1,c2) = (readHexDigit c1 `rotateL` 4) .|. readHexDigit c2
 
-readHexDigit :: Char -> Integer
+readHexDigit :: Num a => Char -> a
 readHexDigit c
   | ordc >= 48, ordc <= 57  {- 0..9 -} = fromIntegral (ordc - 48)
   | ordc >= 65, ordc <= 70  {- A..F -} = fromIntegral (ordc - 55)
   | ordc >= 97, ordc <= 102 {- a..f -} = fromIntegral (ordc - 87)
-  | otherwise = error "readHexDigit failed"
+  | otherwise = error $ "readHexDigit: " ++ c : " is not in not a hex char"
   where
     ordc = ord c
 
@@ -79,6 +99,4 @@ readHexDigit c
     -- ord 'f' -> 102
     -- ord '0' -> 48
     -- ord '9' -> 57
-
-
 
