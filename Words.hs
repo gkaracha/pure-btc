@@ -4,9 +4,9 @@
 -- Re-export all word types
 module Words
 ( module Data.Bits
-, Word8, Word16, Word32, Word64, Word128, Word256, Word512
-, w128ToInteger, w256ToInteger, w512ToInteger -- TODO: No 'Integral' instances for these.
-, Split(..), Bytes(..), Words(..)
+, Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512
+, w128ToInteger, w160ToInteger, w256ToInteger, w512ToInteger -- TODO: No 'Integral' instances for these.
+, Split(..), Bytes(..), fromByteString, Words(..)
 ) where
 
 import Data.Word
@@ -14,6 +14,7 @@ import Data.Bits
 import qualified Data.ByteString as BS
 import Data.List (foldl')
 import Word128
+import Word160
 import Word256
 import Word512
 
@@ -112,6 +113,11 @@ instance Bytes Word128 where
   fromBytes = fromBytesGen
   noBytes _ = 16
 
+instance Bytes Word160 where
+  toBytes   = w160ToBytes
+  fromBytes = fromBytesGen
+  noBytes _ = 20
+
 instance Bytes Word256 where
   toBytes   = w256ToBytes
   fromBytes = fromBytesGen
@@ -161,6 +167,10 @@ instance Words Word128 where
   toWords   = toWordsGen
   fromWords = fromWordsGen
 
+instance Words Word160 where
+  toWords   = w160ToWords
+  fromWords = fromWordsGen
+
 instance Words Word256 where
   toWords   = toWordsGen
   fromWords = fromWordsGen
@@ -185,22 +195,14 @@ toWordsGen w = toWords w1 ++ toWords w2
   where
     (w1,w2) = toHalves w
 
--- || -- * Parse ByteStrings as words
--- || -- ----------------------------------------------------------------------------
--- ||
--- || bs_w8 :: BS.ByteString -> Word8
--- || bs_w8 = fromBytes . toBytes
--- ||
--- || bs_w16 :: BS.ByteString -> Word16
--- || bs_w16 = fromBytes . toBytes
--- ||
--- || bs_w32 :: BS.ByteString -> Word32
--- || bs_w32 = fromBytes . toBytes
--- ||
--- || bs_w64 :: BS.ByteString -> Word64
--- || bs_w64 = fromBytes . toBytes
--- ||
--- || -- TODO: bs_w128 :: BS.ByteString -> Word128
--- || -- TODO: bs_w256 :: BS.ByteString -> Word256
--- || -- TODO: bs_w512 :: BS.ByteString -> Word512
+-- * Parse ByteStrings as words
+-- ----------------------------------------------------------------------------
+
+fromByteString :: (Bytes a, Num a) => BS.ByteString -> Maybe a
+fromByteString bs
+  | BS.length bs == noBytes result = Just result
+  | otherwise                      = Nothing
+  where
+    result = fromInteger
+           $ foldl' (\a w -> (a `shiftL` 8) .|. fromIntegral w) 0 (BS.unpack bs)
 
