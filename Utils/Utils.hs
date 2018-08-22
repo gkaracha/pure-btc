@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils (chunksOf, toEnumError, fromEnumError, pair) where
+module Utils.Utils (chunksOf, toEnumError, fromEnumError, pair) where
 
 import Data.List (unfoldr)
 import qualified Data.ByteString as BS

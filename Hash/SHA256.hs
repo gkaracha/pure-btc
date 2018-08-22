@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module SHA256 where
+module Hash.SHA256 where
 
 import Data.Array (Array, listArray, (!), array)
 import qualified Data.ByteString as BS
 
-import Hex
-import Utils
-import Words
+import Encodings.Hex
+import Utils.Utils
+import Data.Words
 
 -- * Program Constants
 -- ----------------------------------------------------------------------------

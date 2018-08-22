@@ -1,14 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word256 (Word256, w256ToW128s, w128sToW256, w256ToBytes) where
+module Data.Words.Word256 (Word256, w256ToW128s, w128sToW256, w256ToBytes) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Word128
-import Utils
+import Data.Words.Word128
+import Utils.Utils
 
 -- * Word256, masks, and utilities
 -- ----------------------------------------------------------------------------

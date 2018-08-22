@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Word160 (Word160, w160ToWords, w160ToBytes) where
+module Data.Words.Word160 (Word160, w160ToWords, w160ToBytes) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Utils
+import Utils.Utils
 
 -- 160 bits == 20 bytes == 40 hex digits == 5 Word32s
 

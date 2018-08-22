@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hex (Hex(..), showHexBytes, readHexDigit, readHexBytes) where
+module Encodings.Hex (Hex(..), showHexBytes, readHexDigit, readHexBytes) where
 {-
   Convert from numeric types to hex strings and vice versa.
 -}
@@ -9,8 +9,8 @@ import qualified Numeric         as N
 import qualified Data.ByteString as BS
 import Data.Char (ord)
 import Data.List (foldl')
-import Words
-import Utils
+import Data.Words
+import Utils.Utils
 
 -- * Class for things that can be printed to and read as hexadecimal
 -- ----------------------------------------------------------------------------

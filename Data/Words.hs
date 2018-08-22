@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 
 -- Re-export all word types
-module Words
+module Data.Words
 ( module Data.Bits
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512
 , Split(..), Bytes(..), fromByteString, fromByteStringUnsafe, Words(..)
@@ -12,10 +12,10 @@ import Data.Word
 import Data.Bits
 import qualified Data.ByteString as BS
 import Data.List (foldl')
-import Word128
-import Word160
-import Word256
-import Word512
+import Data.Words.Word128
+import Data.Words.Word160
+import Data.Words.Word256
+import Data.Words.Word512
 
 -- * Splitting words in half
 -- ----------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Base58Check where
+module Encodings.Base58Check where
 
 -- import Data.List
 import Data.Array
