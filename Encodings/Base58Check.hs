@@ -88,6 +88,13 @@ partitionBytes xs = let (front, checksum) = splitAt (length xs - 4) xs
 -- * Testing
 -- ----------------------------------------------------------------------------
 
+-- | https://github.com/libbitcoin/libbitcoin-explorer/wiki/bx-base58check-decode
+-- | https://bitcoin.stackexchange.com/questions/5671/how-do-you-perform-double-sha-256-encoding
+-- | https://en.bitcoin.it/wiki/Base58Check_encoding#Creating_a_Base58Check_string
+-- | https://github.com/joeblackwaslike/base58check
+-- | https://en.bitcoin.it/wiki/List_of_address_prefixes
+-- | https://en.bitcoin.it/wiki/Base58Check_encoding
+
 -- || -- IT WORKS
 -- || test_base58_100000 :: Bool
 -- || test_base58_100000 = all checkOne [1..100000]
