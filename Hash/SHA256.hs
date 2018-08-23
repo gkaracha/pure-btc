@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hash.SHA256 where
+module Hash.SHA256 (sha256, sha256N, doubleSHA256, {-testing-} test_io_sha) where
 
 import Data.Array (Array, listArray, (!), array)
 import qualified Data.ByteString as BS
@@ -67,8 +67,11 @@ lS1 x = (x `rotateR` 17) `xor` (x `rotateR` 19) `xor` (x `shiftR` 10)
 -- * Testing
 -- ----------------------------------------------------------------------------
 
-sha256_io_bytestring :: BS.ByteString -> IO ()
-sha256_io_bytestring = putStrLn . showHex . sha256 . padAndChunkBS
+-- || sha256_io_bytestring :: BS.ByteString -> IO ()
+-- || sha256_io_bytestring = putStrLn . showHex . sha256hash . padAndChunkBS
+
+test_io_sha :: (BS.ByteString -> BS.ByteString) -> BS.ByteString -> IO ()
+test_io_sha hash bs = putStrLn $ showHex $ hash bs
 
 -- |?| -- if you want to try a string, not a file, do
 -- |?| --
@@ -133,8 +136,8 @@ buildW block = w
 -- * SHA256 Hashing
 -- ----------------------------------------------------------------------------
 
-sha256 :: [Word512] -> Word256
-sha256 mn = partWord256ToWord256 $ loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
+sha256hash :: [Word512] -> Word256
+sha256hash mn = partWord256ToWord256 $ loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
   where
     -- | SHA256 Compression Function
     comp_fn :: Word512 -> PartWord256 -> PartWord256
@@ -155,4 +158,20 @@ sha256 mn = partWord256ToWord256 $ loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
     loop []             hpart = hpart
     loop (block:blocks) hpart = loop blocks (hpart' `addPartWord256` hpart)
       where hpart' = comp_fn block hpart
+
+-- * SHA256 Interface
+-- ----------------------------------------------------------------------------
+
+-- | Apply the SHA256 algorithm on a bytestring
+sha256 :: BS.ByteString -> BS.ByteString
+sha256 = toByteString . sha256hash . padAndChunkBS
+
+-- | Apply the SHA256 algorithm N times on a bytestring
+sha256N :: Int -> BS.ByteString -> BS.ByteString
+sha256N n msg | n <= 0    = msg
+              | otherwise = sha256N (n-1) (sha256 msg)
+
+-- | Apply the SHA256 algorithm two times on a bytestring (used often)
+doubleSHA256 :: BS.ByteString -> BS.ByteString
+doubleSHA256 = sha256 . sha256
 
