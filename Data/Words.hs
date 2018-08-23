@@ -4,8 +4,9 @@
 -- Re-export all word types
 module Data.Words
 ( module Data.Bits
-, Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512
-, Split(..), Bytes(..), fromByteString, fromByteStringUnsafe, Words(..)
+, Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512, BS.ByteString
+, Split(..), Bytes(..), fromByteString, bsToInteger, integerToBytes, integerToBS
+, fromByteStringUnsafe, Words(..)
 ) where
 
 import Data.Word
@@ -197,15 +198,29 @@ toWordsGen w = toWords w1 ++ toWords w2
 -- * Parse ByteStrings as words
 -- ----------------------------------------------------------------------------
 
+bsToInteger :: BS.ByteString -> Integer
+bsToInteger = foldl' (\a w -> (a `shiftL` 8) .|. fromIntegral w) 0 . BS.unpack
+
+integerToBytes :: Integer -> [Word8]
+integerToBytes 0 = [0x00]
+integerToBytes i = aux [] i
+  where
+    aux acc 0 = acc
+    aux acc n | (q,r) <- quotRem n 256
+              = aux (fromIntegral r : acc) q
+
+integerToBS :: Integer -> BS.ByteString
+integerToBS = fromBytes . integerToBytes
+
 fromByteString :: (Bytes a, Num a) => BS.ByteString -> Maybe a
 fromByteString bs
   | BS.length bs == noBytes result = Just result
   | otherwise                      = Nothing
   where
-    result = fromInteger
-           $ foldl' (\a w -> (a `shiftL` 8) .|. fromIntegral w) 0 (BS.unpack bs)
+    result = fromInteger (bsToInteger bs)
 
 fromByteStringUnsafe :: (Bytes a, Num a) => BS.ByteString -> a
 fromByteStringUnsafe bs = case fromByteString bs of
   Just word -> word
   Nothing   -> error "fromByteStringUnsafe: Nothing"
+
