@@ -6,15 +6,16 @@ import Data.Words.Word128 ()
 import Data.Words.Word160 ()
 import Data.Words.Word256 ()
 import Data.Words.Word512 ()
-import Data.Words ()
+import Data.Words         ()
 
-import Encodings.Hex ()
-import Encodings.Base58 ()
+import Encodings.Hex         ()
+import Encodings.Base58      ()
 import Encodings.Base58Check ()
 
 import Utils.Utils ()
 
-import Hash.SHA256 ()
+import Hash.SHA256    ()
+import Hash.RIPEMD160 ()
 
 main :: IO ()
 main = putStrLn "Remember to load all files to make sure they compile!"
