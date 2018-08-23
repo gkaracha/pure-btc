@@ -5,7 +5,6 @@ module Utils.Utils (chunksOf, toEnumError, fromEnumError, pair) where
 import Data.List (unfoldr)
 import qualified Data.ByteString as BS
 
-
 chunksOf :: Int -> BS.ByteString -> [BS.ByteString]
 chunksOf x = unfoldr gen
   where
