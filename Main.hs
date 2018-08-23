@@ -1,10 +1,15 @@
-
+{-# OPTIONS_GHC -Wall #-}
 
 module Main where
 
+import Data.Words.Word128 ()
+import Data.Words.Word160 ()
+import Data.Words.Word256 ()
+import Data.Words.Word512 ()
 import Data.Words ()
 
 import Encodings.Hex ()
+import Encodings.Base58 ()
 import Encodings.Base58Check ()
 
 import Utils.Utils ()
