@@ -165,6 +165,8 @@ test_io_ripemd160 bs = printHex (ripemd160 bs)
 --   https://github.com/sipa/Coin25519/blob/master/src/crypto/ripemd160.c
 -- AND DEFINITELY THIS GUY:
 --   https://crypto.stackexchange.com/questions/32400/how-does-ripemd160-pad-the-message
+-- AND PROBABLY THIS:
+--   https://homes.esat.kuleuven.be/~bosselae/ripemd160/ps/AB-9601/rmd160.c
 
 --Tests from the paper
 test_ripemd160 :: Bool

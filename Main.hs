@@ -11,13 +11,16 @@ import Data.Words         ()
 import Encodings.Hex         ()
 import Encodings.Base58      ()
 import Encodings.Base58Check ()
+import Encodings.WIF         ()
 
 import Utils.Utils ()
 
 import Hash.SHA256    ()
 import Hash.RIPEMD160 ()
+import Hash.Elliptic ()
 
-import Elliptic ()
+import Key.Private ()
+import Key.Public  ()
 
 main :: IO ()
 main = putStrLn "Remember to load all files to make sure they compile!"

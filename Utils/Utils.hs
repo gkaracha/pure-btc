@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils.Utils (chunksOf, listChunksOf, toEnumError, fromEnumError, pair) where
+module Utils.Utils (chunksOf, listChunksOf, toEnumError, fromEnumError, pair, splitInThree) where
 
 import Data.List (unfoldr)
 import qualified Data.ByteString as BS
@@ -35,4 +35,12 @@ pair :: [a] -> Maybe [(a,a)]
 pair []       = Just []
 pair (x:y:ys) = fmap ((x,y):) (pair ys)
 pair (_:_)    = Nothing
+
+splitInThree :: Show a => Int -> Int -> Int -> [a] -> Maybe ([a],[a],[a])
+splitInThree size1 size2 size3 list
+  | size1 + size2 + size3 == length list
+  , (pt1,rst) <- splitAt size1 list
+  , (pt2,pt3) <- splitAt size2 rst
+  = Just (pt1,pt2,pt3)
+  | otherwise = Nothing
 
