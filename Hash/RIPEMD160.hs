@@ -8,7 +8,7 @@ module Hash.RIPEMD160 (ripemd160, ripemd160N, doubleRIPEMD160, test_io_ripemd160
 import Data.Array (Array, listArray, (!))
 import Encodings.Hex
 import Data.Words
-import Hash.Padding (padAndChunkBS)
+import Hash.Padding (padRIPEMD160, ripemd160ToBytes)
 
 -- * Program Constants
 -- ----------------------------------------------------------------------------
@@ -197,7 +197,16 @@ ripemd160hash input = partWord160ToWord160 $ loop input (iv0,iv1,iv2,iv3,iv4)
 -- ----------------------------------------------------------------------------
 
 test_io_ripemd160 :: ByteString -> IO ()
-test_io_ripemd160 bs = putStrLn $ showHex $ ripemd160 bs
+test_io_ripemd160 bs = printHex (ripemd160 bs)
+
+-- | test_io_ripemd160_2 :: Word512 -> String
+-- | test_io_ripemd160_2 w = showHex $ toByteString
+-- |                       -- $ (fromBytes :: [Word8] -> Word160) $ reverse $ toBytes
+-- |                       $ ripemd160hash [w]
+
+-- | findI = any checkOne [0..511]
+-- |   where
+-- |     checkOne i = test_io_ripemd160_2 (0x1 `rotateL` i) == "9c1185a5c5e9fc54612808977ee8f548b2258d31"
 
 -- CHECKOUT THIS GUY (ENDIANESS):
 --   http://www.users.zetnet.co.uk/hopwood/crypto/scan/md.html
@@ -211,11 +220,11 @@ test_io_ripemd160 bs = putStrLn $ showHex $ ripemd160 bs
 
 -- | Apply the RIPEMD160 algorithm on a bytestring
 ripemd160 :: ByteString -> ByteString
-ripemd160 = toByteString . ripemd160hash . padAndChunkBS
+ripemd160 = fromBytes . ripemd160ToBytes . ripemd160hash . padRIPEMD160
 
 -- | -- | Apply the RIPEMD160 algorithm on a bytestring
 -- | ripemd160 :: ByteString -> ByteString
--- | ripemd160 = toByteString . ripemd160hash
+-- | ripemd160 = fromBytes . reverse . toBytes . ripemd160hash
 -- |           . (reverse . map (fromBytes . reverse . toBytes))
 -- |           . padAndChunkBS
 

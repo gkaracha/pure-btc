@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils.Utils (chunksOf, toEnumError, fromEnumError, pair) where
+module Utils.Utils (chunksOf, listChunksOf, toEnumError, fromEnumError, pair) where
 
 import Data.List (unfoldr)
 import qualified Data.ByteString as BS
@@ -10,6 +10,12 @@ chunksOf x = unfoldr gen
   where
     gen a | BS.null a = Nothing
           | otherwise = Just (BS.splitAt x a)
+
+listChunksOf :: Int -> [a] -> [[a]]
+listChunksOf x = unfoldr gen
+  where
+    gen a | null a    = Nothing
+          | otherwise = Just (splitAt x a)
 
 toEnumError :: (Show a) => String -> Int -> (a,a) -> b
 toEnumError inst_ty i bnds
