@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hash.RIPEMD160 (ripemd160, ripemd160N, doubleRIPEMD160, test_io_ripemd160) where
+module Hash.RIPEMD160 (ripemd160, ripemd160N, doubleRIPEMD160, test_io_ripemd160, test_ripemd160) where
 
 -- SOURCE:
 --   https://www.esat.kuleuven.be/cosic/publications/article-56.pdf
@@ -10,6 +10,8 @@ import qualified Data.ByteString as BS
 import Encodings.Hex
 import Data.Words
 import Utils.Utils (listChunksOf)
+
+import qualified Data.ByteString.Char8 as BSC
 
 -- * Program Constants
 -- ----------------------------------------------------------------------------
@@ -163,6 +165,29 @@ test_io_ripemd160 bs = printHex (ripemd160 bs)
 --   https://github.com/sipa/Coin25519/blob/master/src/crypto/ripemd160.c
 -- AND DEFINITELY THIS GUY:
 --   https://crypto.stackexchange.com/questions/32400/how-does-ripemd160-pad-the-message
+
+--Tests from the paper
+test_ripemd160 :: Bool
+test_ripemd160
+  = and [ showHex (ripemd160 (BSC.pack ""))
+          == "9c1185a5c5e9fc54612808977ee8f548b2258d31"
+        , showHex (ripemd160 (BSC.pack "a"))
+          == "0bdc9d2d256b3ee9daae347be6f4dc835a467ffe"
+        , showHex (ripemd160 (BSC.pack "abc"))
+          == "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc"
+        , showHex (ripemd160 (BSC.pack "message digest"))
+          == "5d0689ef49d2fae572b881b123a85ffa21595f36"
+        , showHex (ripemd160 (BSC.pack ['a'..'z']))
+          == "f71c27109c692c1b56bbdceb5b9d2865b3708dbc"
+        , showHex (ripemd160 (BSC.pack "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"))
+          == "12a053384a9c0c88e405a06c27dcf49ada62eb2b"
+        , showHex (ripemd160 (BSC.pack "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"))
+          == "b0e20b6e3116640286ed3a87a5713079b21f5189"
+        , showHex (ripemd160 (BSC.pack (concat (replicate 8 "1234567890"))))
+          == "9b752e45573d4b39f4dbd3323cab82bf63326bfb"
+        , showHex (ripemd160 (BSC.pack (replicate 1000000 'a')))
+          == "52783243c1697bdbe16d37f97f68f08325dc1528"
+        ]
 
 -- * RIPEMD160 Interface
 -- ----------------------------------------------------------------------------
