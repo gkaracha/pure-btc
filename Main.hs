@@ -17,5 +17,7 @@ import Utils.Utils ()
 import Hash.SHA256    ()
 import Hash.RIPEMD160 ()
 
+import Elliptic ()
+
 main :: IO ()
 main = putStrLn "Remember to load all files to make sure they compile!"

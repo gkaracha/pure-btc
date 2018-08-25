@@ -7,6 +7,7 @@ module Data.Words
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512, BS.ByteString
 , Split(..), Bytes(..), fromByteString, bsToInteger, integerToBytes, integerToBS
 , fromByteStringUnsafe, Words(..)
+, revWord32 -- TODO: ADD MORE OPERATIONS
 ) where
 
 import Data.Word
@@ -223,4 +224,13 @@ fromByteStringUnsafe :: (Bytes a, Num a) => BS.ByteString -> a
 fromByteStringUnsafe bs = case fromByteString bs of
   Just word -> word
   Nothing   -> error "fromByteStringUnsafe: Nothing"
+
+-- * Encoding Changes
+-- ----------------------------------------------------------------------------
+
+revWord32 :: Word32 -> Word32
+revWord32 = fromBytes . reverse . toBytes
+
+-- TODO: Big endian for bits
+-- TODO: Little endian for bytes
 

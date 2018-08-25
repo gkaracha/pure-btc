@@ -10,6 +10,7 @@ import Data.Words
 import Hash.SHA256
 import Control.Monad (guard)
 import Encodings.Base58
+import Encodings.Hex
 
 -- * Encoding into Base58Check
 -- ----------------------------------------------------------------------------
@@ -95,38 +96,26 @@ partitionBytes xs = let (front, checksum) = splitAt (length xs - 4) xs
 -- | https://en.bitcoin.it/wiki/List_of_address_prefixes
 -- | https://en.bitcoin.it/wiki/Base58Check_encoding
 
--- || -- IT WORKS
--- || test_base58_100000 :: Bool
--- || test_base58_100000 = all checkOne [1..100000]
--- ||   where
--- ||     checkOne :: Integer -> Bool
--- ||     checkOne i = case decodeBase58 (encodeBase58 i) of
--- ||                    Nothing -> error "invalid char!" -- False
--- ||                    Just x  -> if x == i then True
--- ||                                         else error (show i)
+-- || test_print_decode "173RKgkk7fMbYUYBGyyAHeZ6rwfKRMn17h7DtGsmpEdab8TV6UB"
+-- || checksum : 1020266843
+-- || payload  : 031bab84e687e36514eeaf5a017c30d32c1f59dd4ea6629da7970ca374513dd006
+-- || version  : 0
 -- ||
+-- || test_print_decode "7DTXS6pY6a98XH2oQTZUbbd1Z7P4NzkJqfraixprPutXQVTkwBGw"
+-- || checksum : 3840642601
+-- || payload  : 031bab84e687e36514eeaf5a017c30d32c1f59dd4ea6629da7970ca374513dd006
+-- || version  : 42
 -- ||
--- || test_base58check :: Bool
--- || test_base58check = all checkOne [ (vb, msg) | vb <- [1..255], msg <- [1,11..3000] ]
--- ||   where
--- ||     checkOne :: (Integer, Integer) -> Bool
--- ||     checkOne (vb,msg) = let enc = encodeBase58Check (fromInteger vb) (integerToBS msg)
--- ||                         in  case decodeBase58Check enc of
--- ||                               Nothing -> False
--- ||                               Just (vb',msg',_chk) -> vb'  == fromInteger vb
--- ||                                                    && msg' == integerToBS msg
--- ||
--- || test_integer_bytestring :: Bool
--- || test_integer_bytestring = all checkOne [1..100000]
--- ||   where
--- ||     checkOne :: Integer -> Bool
--- ||     checkOne i = i == bsToInteger (integerToBS i)
--- ||
--- || test_print_decode :: String -> IO ()
--- || test_print_decode input = case decodeBase58Check input of
--- ||   Nothing -> putStrLn "This failed :/"
--- ||   Just (vb,msg :: ByteString,checksum) -> do
--- ||     putStrLn ("checksum : " ++ show checksum)
--- ||     putStrLn ("payload  : " ++ showHex msg)
--- ||     putStrLn ("version  : " ++ show vb)
+-- || test_print_decode "12ANjYr7zPnxRdZfnmC2e6jjHDpBY"
+-- || checksum : 530125139
+-- || payload  : 5361746f736869204e616b616d6f746f
+-- || version  : 0
+
+test_print_decode :: String -> IO ()
+test_print_decode input = case decodeBase58Check input of
+  Nothing -> putStrLn "This failed :/"
+  Just (vb,msg :: ByteString,checksum) -> do
+    putStrLn ("checksum : " ++ show (revWord32 checksum))
+    putStrLn ("payload  : " ++ showHex msg)
+    putStrLn ("version  : " ++ show vb)
 

@@ -234,6 +234,3 @@ padRIPEMD160 bs = map fromWords             -- [Word512]
 ripemd160ToBytes :: Word160 -> [Word8]
 ripemd160ToBytes = concatMap toBytes . map revWord32 . toWords
 
-revWord32 :: Word32 -> Word32
-revWord32 = fromBytes . reverse . toBytes
-
