@@ -210,7 +210,10 @@ doubleRIPEMD160 = ripemd160 . ripemd160
 
 -- | Pad a message and partition it into chunks of 512 bits
 padRIPEMD160 :: BS.ByteString -> [Word512]
-padRIPEMD160 bs = bytesToRIPEMD160 all_bytes
+padRIPEMD160 bs = map fromWords             -- [Word512]
+                $ listChunksOf 16           -- [[Word32]]
+                $ map (fromBytes . reverse) -- [Word32]
+                $ listChunksOf 4 all_bytes  -- [[Word8]]
   where
     all_bytes :: [Word8]
     all_bytes = concat [ toBytes bs
@@ -228,23 +231,6 @@ padRIPEMD160 bs = bytesToRIPEMD160 all_bytes
     comp_k :: Int -> Int
     comp_k l = case mod (l + 1 + 64) 512 of { 0 -> 0; n -> 512 - n }
 
-
-bytesToRIPEMD160 :: [Word8] -> [Word512]
-bytesToRIPEMD160 bytes = word512s
-  where
-    word512s :: [Word512]
-    word512s = map fromWords chunk512s
-
-    chunk512s :: [[Word32]]
-    chunk512s = listChunksOf 16 word32s
-
-    word32s :: [Word32]
-    word32s = map (fromBytes . reverse) chunk32s
-
-    chunk32s :: [[Word8]]
-    chunk32s = listChunksOf 4 bytes
-
--- inverse of bytesToRIPEMD160
 ripemd160ToBytes :: Word160 -> [Word8]
 ripemd160ToBytes = concatMap toBytes . map revWord32 . toWords
 
