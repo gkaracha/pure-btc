@@ -6,9 +6,10 @@ module Hash.RIPEMD160 (ripemd160, ripemd160N, doubleRIPEMD160, test_io_ripemd160
 --   https://www.esat.kuleuven.be/cosic/publications/article-56.pdf
 
 import Data.Array (Array, listArray, (!))
+import qualified Data.ByteString as BS
 import Encodings.Hex
 import Data.Words
-import Hash.Padding (padRIPEMD160, ripemd160ToBytes)
+import Utils.Utils (listChunksOf)
 
 -- * Program Constants
 -- ----------------------------------------------------------------------------
@@ -150,63 +151,11 @@ ripemd160hash input = partWord160ToWord160 $ loop input (iv0,iv1,iv2,iv3,iv4)
     loop (block:blocks) hpart = loop blocks (comp_hs hpart abcds)
       where abcds = comp_fn block (hpart,hpart)
 
--- TESTS
--- -----
--- | "a"   => "0bdc9d2d256b3ee9daae347be6f4dc835a467ffe"
--- | "abc" => "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc"
-
--- start the h0..h4 with iv0..iv4
-
--- for i = [0..t-1] {
---   let a  = h0 in
---   let b  = h1 in
---   let c  = h2 in
---   let d  = h3 in
---   let e  = h4 in
---
---   let a' = h0 in
---   let b' = h1 in
---   let c' = h2 in
---   let d' = h3 in
---   let e' = h4 in
---
---   for j = [0..79] {
---     let t  = ..?1?..      in
---     let a  = e            in
---     let e  = d            in
---     let d  = rol_10 (c)   in
---     let c  = b            in
---     let b  = t            in
---
---     let t' = ..?2?..      in
---     let a' = e'           in
---     let e' = d'           in
---     let d' = rol_10 (c')  in
---     let c' = b'           in
---     let b' = t'           in
---   }
---   let t  = h1 + c + d' in
---   let h1 = h2 + d + e' in
---   let h2 = h3 + e + a' in
---   let h3 = h4 + a + b' in
---   let h4 = h0 + b + c' in
---   let h0 = t           in
--- }
-
 -- * Testing
 -- ----------------------------------------------------------------------------
 
 test_io_ripemd160 :: ByteString -> IO ()
 test_io_ripemd160 bs = printHex (ripemd160 bs)
-
--- | test_io_ripemd160_2 :: Word512 -> String
--- | test_io_ripemd160_2 w = showHex $ toByteString
--- |                       -- $ (fromBytes :: [Word8] -> Word160) $ reverse $ toBytes
--- |                       $ ripemd160hash [w]
-
--- | findI = any checkOne [0..511]
--- |   where
--- |     checkOne i = test_io_ripemd160_2 (0x1 `rotateL` i) == "9c1185a5c5e9fc54612808977ee8f548b2258d31"
 
 -- CHECKOUT THIS GUY (ENDIANESS):
 --   http://www.users.zetnet.co.uk/hopwood/crypto/scan/md.html
@@ -222,12 +171,6 @@ test_io_ripemd160 bs = printHex (ripemd160 bs)
 ripemd160 :: ByteString -> ByteString
 ripemd160 = fromBytes . ripemd160ToBytes . ripemd160hash . padRIPEMD160
 
--- | -- | Apply the RIPEMD160 algorithm on a bytestring
--- | ripemd160 :: ByteString -> ByteString
--- | ripemd160 = fromBytes . reverse . toBytes . ripemd160hash
--- |           . (reverse . map (fromBytes . reverse . toBytes))
--- |           . padAndChunkBS
-
 -- | Apply the RIPEMD160 algorithm N times on a bytestring
 ripemd160N :: Int -> ByteString -> ByteString
 ripemd160N n msg | n <= 0    = msg
@@ -236,4 +179,50 @@ ripemd160N n msg | n <= 0    = msg
 -- | Apply the RIPEMD160 algorithm two times on a bytestring
 doubleRIPEMD160 :: ByteString -> ByteString
 doubleRIPEMD160 = ripemd160 . ripemd160
+
+-- * Message padding
+-- ----------------------------------------------------------------------------
+
+-- | Pad a message and partition it into chunks of 512 bits
+padRIPEMD160 :: BS.ByteString -> [Word512]
+padRIPEMD160 bs = bytesToRIPEMD160 all_bytes
+  where
+    all_bytes :: [Word8]
+    all_bytes = concat [ toBytes bs
+                       , 0x80 : replicate (no_bytes-1) 0x00
+                       , reverse $ toBytes (fromIntegral len :: Word64) ]
+
+    -- Length of message
+    len :: Int
+    len = 8 * BS.length bs
+
+    -- Number of bytes to add (1 0..0)
+    no_bytes | (q,r) <- (comp_k len+1) `quotRem` 8
+             = if r /= 0 then error "padBS: what??" else q
+
+    comp_k :: Int -> Int
+    comp_k l = case mod (l + 1 + 64) 512 of { 0 -> 0; n -> 512 - n }
+
+
+bytesToRIPEMD160 :: [Word8] -> [Word512]
+bytesToRIPEMD160 bytes = word512s
+  where
+    word512s :: [Word512]
+    word512s = map fromWords chunk512s
+
+    chunk512s :: [[Word32]]
+    chunk512s = listChunksOf 16 word32s
+
+    word32s :: [Word32]
+    word32s = map (fromBytes . reverse) chunk32s
+
+    chunk32s :: [[Word8]]
+    chunk32s = listChunksOf 4 bytes
+
+-- inverse of bytesToRIPEMD160
+ripemd160ToBytes :: Word160 -> [Word8]
+ripemd160ToBytes = concatMap toBytes . map revWord32 . toWords
+
+revWord32 :: Word32 -> Word32
+revWord32 = fromBytes . reverse . toBytes
 
