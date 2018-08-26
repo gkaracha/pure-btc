@@ -10,14 +10,6 @@ import Hash.ECM
 import Utils.Utils (splitInTwo, splitInThree, readHexError)
 import qualified Key.Private as PK
 
-priv_k :: PK.PrivateKey
-priv_k = readHex "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
-
-test :: IO ()
-test = putStrLn $ showHex (publicKeyFromPrivateKey priv_k)
-
--- TODO: Test fails. look at ~/Desktop/example
-
 -- * Uncompressed public keys
 -- ----------------------------------------------------------------------------
 
@@ -100,6 +92,10 @@ publicKeyFromPrivateKey pk = case pk of
       | even y    = CPKEven x
       | otherwise = CPKOdd  x
 
+-- * Testing
+-- ----------------------------------------------------------------------------
 
-
+test :: Bool
+test = showHex (publicKeyFromPrivateKey (readHex "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"))
+       == "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"
 

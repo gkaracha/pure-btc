@@ -31,8 +31,8 @@ uncompress :: Word8 -> Word256 -> (Word256,Word256) -- prefix == 0x02 or 0x03
 uncompress prefix w = (w, fromInteger y)
   where
     x = toInteger w
-    b = ((x*x*x+aconst*x+bconst) ^ ((pconst+1) `shiftR` 2)) `rem` pconst
-    y | (b + toInteger prefix) `rem` 2 /= 0
+    b = ((x*x*x+aconst*x+bconst) ^ ((pconst+1) `shiftR` 2)) `mod` pconst
+    y | (b + toInteger prefix) `mod` 2 /= 0
       = pconst - b
       | otherwise = b
 
@@ -63,18 +63,22 @@ genPoint = (genPointX,genPointY)
 
 inv :: Integer -> Integer -> Integer
 inv 0 _ = 0
-inv a n = aux 1 0 (a `rem` n) n
+inv a n = aux 1 0 (a `mod` n) n
   where
     aux lm hm low high
-      | low > 1, let r = high `quot` low
+      | low > 1, let r = high `div` low
       = aux (hm - lm * r) lm (high - low * r) low
-      | otherwise = lm `rem` n
+      | otherwise = lm `mod` n
 
 -- * Elliptic curve multiplication
 -- ----------------------------------------------------------------------------
 
 toJacobian :: Point2D -> Point3D
 toJacobian (x,y) = (x,y,1)
+
+fromJacobian :: Point3D -> Point2D
+fromJacobian (x,y,z) | nz <- inv z pconst
+                     = ((x * nz ^ 2) `mod` pconst, (y * nz ^ 3) `mod` pconst)
 
 -- | Doubling
 jacobianDouble :: Point3D -> Point3D
@@ -84,13 +88,13 @@ jacobianDouble (px,py,pz) = (nx,ny,nz)
     ysq,s,m  :: Integer -- Auxiliary definitions
     nx,ny,nz :: Integer -- Result in parts
 
-    ysq = (py ^ 2)                               `rem` pconst
-    s   = ((px * ysq) `shiftL` 2)                `rem` pconst
-    m   = (3 * (px ^ 2) + aconst * (pz ^ 4))     `rem` pconst
+    ysq = (py ^ 2)                               `mod` pconst
+    s   = ((px * ysq) `shiftL` 2)                `mod` pconst
+    m   = (3 * (px ^ 2) + aconst * (pz ^ 4))     `mod` pconst
 
-    nx = (m ^ 2 - (s `shiftL` 2))                `rem` pconst
-    ny = (m * (s - nx) - ((ysq ^ 2) `shiftL` 3)) `rem` pconst
-    nz = ((py * pz) `shiftL` 1)                  `rem` pconst
+    nx = (m ^ 2 - (s `shiftL` 1))                `mod` pconst
+    ny = (m * (s - nx) - ((ysq ^ 2) `shiftL` 3)) `mod` pconst
+    nz = ((py * pz) `shiftL` 1)                  `mod` pconst
 
 -- | Addition
 jacobianAdd :: Point3D -> Point3D -> Point3D
@@ -101,32 +105,28 @@ jacobianAdd p@(px,py,pz) (qx,qy,qz)
   | otherwise
   = let h    = u2 - u1                in
     let r    = s2 - s1                in
-    let h2   = (h * h)   `rem` pconst in
-    let h3   = (h * h2)  `rem` pconst in
-    let u1h2 = (u1 * h2) `rem` pconst in
+    let h2   = (h * h)   `mod` pconst in
+    let h3   = (h * h2)  `mod` pconst in
+    let u1h2 = (u1 * h2) `mod` pconst in
 
-    let nx = (r ^ 2 - h3 - 2 * u1h2)     `rem` pconst in -- TODO: (`shiftL` 1) instead of (* 2)
-    let ny = (r * (u1h2 - nx) - s1 * h3) `rem` pconst in
-    let nz = (h * pz * qz)               `rem` pconst in
+    let nx = (r ^ 2 - h3 - (u1h2 `shiftL` 1))     `mod` pconst in -- TODO: (`shiftL` 1) instead of (* 2)
+    let ny = (r * (u1h2 - nx) - s1 * h3) `mod` pconst in
+    let nz = (h * pz * qz)               `mod` pconst in
 
     (nx,ny,nz)
   where
-    u1 = (px * qz ^ 2) `rem` pconst
-    u2 = (qx * pz ^ 2) `rem` pconst
-    s1 = (py * qz ^ 3) `rem` pconst
-    s2 = (qy * pz ^ 3) `rem` pconst
-
-fromJacobian :: Point3D -> Point2D
-fromJacobian (x,y,z) | nz <- inv z pconst
-                     = ((x * nz ^ 2) `rem` pconst, (y * nz ^ 3) `rem` pconst)
+    u1 = (px * qz ^ 2) `mod` pconst
+    u2 = (qx * pz ^ 2) `mod` pconst
+    s1 = (py * qz ^ 3) `mod` pconst
+    s2 = (qy * pz ^ 3) `mod` pconst
 
 -- | Scalar multiplication
 jacobianMult :: Point3D -> Integer -> Point3D
 jacobianMult p@(_,y,_) n
   | y == 0 || n == 0      = (0,0,1)
   | n == 1                = p
-  | n <  0 || n >= nconst = jacobianMult p (n `rem` nconst)
-  | n `rem` 2 == 0        = jacobianDouble (jacobianMult p (n `shiftR` 1))
+  | n <  0 || n >= nconst = jacobianMult p (n `mod` nconst)
+  | n `mod` 2 == 0        = jacobianDouble (jacobianMult p (n `shiftR` 1))
   | otherwise {- 1 -}     = jacobianAdd (jacobianDouble (jacobianMult p (n `shiftR` 1))) p
 
 fastMult :: Point2D -> Integer -> Point2D
