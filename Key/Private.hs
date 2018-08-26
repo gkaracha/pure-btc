@@ -10,6 +10,7 @@ import Control.Applicative ((<|>))
 import Data.Words
 import Encodings.Hex
 import Encodings.Base58Check
+import Utils.Utils (readHexError)
 
 -- * "Uncompressed" private keys
 -- ----------------------------------------------------------------------------
@@ -20,7 +21,9 @@ newtype UPrivateKey = UPK Word256
 
 instance Hex UPrivateKey where
   showHex (UPK key) = showHex key
-  readHex str = UPK (readHex str) -- add a length check here?
+  readHex str
+    | length str == 64 = UPK (readHex str)
+    | otherwise        = readHexError "UPrivateKey" str
 
 -- | "Uncompressed" private key to WIF format
 upkToWIF :: UPrivateKey -> String
@@ -43,7 +46,7 @@ instance Hex CPrivateKey where
   showHex (CPK key) = showHex key ++ "01"
   readHex str
     | (w,"01") <- splitAt 64 str = CPK (readHex w)
-    | otherwise = error $ "readHex{CPrivateKey}: " ++ str
+    | otherwise = readHexError "CPrivateKey" str
 
 -- | "Compressed" private key to WIF format
 cpkToWIF :: CPrivateKey -> String
@@ -69,7 +72,7 @@ instance Hex PrivateKey where
   readHex str
     | n == 66   = CPrivateKey (readHex str)
     | n == 64   = UPrivateKey (readHex str)
-    | otherwise = error $ "readHex{PrivateKey}: " ++ str
+    | otherwise = readHexError "PrivateKey" str
     where n = length str
 
 -- | Private key to WIF format

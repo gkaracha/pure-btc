@@ -17,10 +17,12 @@ import Utils.Utils ()
 
 import Hash.SHA256    ()
 import Hash.RIPEMD160 ()
-import Hash.Elliptic ()
+import Hash.Elliptic  ()
+import Hash.HASH160   ()
 
 import Key.Private ()
 import Key.Public  ()
+import Key.Address ()
 
 main :: IO ()
 main = putStrLn "Remember to load all files to make sure they compile!"

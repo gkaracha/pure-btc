@@ -1,6 +1,10 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils.Utils (chunksOf, listChunksOf, toEnumError, fromEnumError, pair, splitInThree) where
+module Utils.Utils
+( chunksOf, listChunksOf
+, toEnumError, fromEnumError, readHexError
+, pair, splitInThree
+) where
 
 import Data.List (unfoldr)
 import qualified Data.ByteString as BS
@@ -30,6 +34,11 @@ fromEnumError inst_ty x
   $ "Enum.fromEnum{" ++ inst_ty ++ "}: value ("
     ++ show x ++ ") is outside of Int's bounds "
     ++ show (minBound::Int, maxBound::Int)
+
+readHexError :: String -> String -> a
+readHexError inst_ty str
+  = errorWithoutStackTrace
+  $ "Hex.readHex{" ++ inst_ty ++ "}: " ++ str
 
 pair :: [a] -> Maybe [(a,a)]
 pair []       = Just []

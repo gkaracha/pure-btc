@@ -5,7 +5,7 @@ module Key.Public where -- Private (PrivateKey(..)) where
 
 import Data.Words
 import Encodings.Hex
-import Utils.Utils (splitInThree)
+import Utils.Utils (splitInThree, readHexError)
 import Data.List (splitAt)
 
 -- | Uncompressed public key
@@ -17,7 +17,7 @@ instance Hex UPublicKey where
   readHex str
     | Just ("04",x,y) <- splitInThree 2 64 64 str
     = UPK (readHex x) (readHex y)
-    | otherwise = error $ "readHex{UPublicKey}: " ++ str
+    | otherwise = readHexError "UPublicKey" str
   -- characters: (2 + 64 + 64 = 130 hex digits)
 
 -- | Compressed public key
@@ -33,7 +33,7 @@ instance Hex CPublicKey where
     | length str == 66, (code,word) <- splitAt 2 str
     , Just fn <-  pCPKcode code
     = fn (readHex word)
-    | otherwise = error $ "readHex{CPublicKey}: " ++ str
+    | otherwise = readHexError "CPublicKey" str
   -- characters: (2 + 64 = 66 hex digits)
 
 pCPKcode :: String -> Maybe (Word256 -> CPublicKey)
