@@ -17,7 +17,7 @@ import Utils.Utils ()
 
 import Hash.SHA256    ()
 import Hash.RIPEMD160 ()
-import Hash.Elliptic  ()
+import Hash.ECM       ()
 import Hash.HASH160   ()
 
 import Key.Private ()
