@@ -77,7 +77,6 @@ decodeBase58Check input = do
   -- Step 7: Check the checksum
   let (front, checksum) = splitAt (length complete - 4) complete
   guard ((take 4 $ toBytes $ doubleSHA256 $ fromBytes front) == checksum)
-  -- TODO TODO TODO TODO
 
   return (part1, fromBytes part2, fromBytes part3)
 

@@ -3,8 +3,7 @@
 module Encodings.WIF where
 
 
--- TODO: Of course it shouldn't be string but leave it like this for now, to be
---       able to parse it with our eyes.
+-- TODO: Make sure that a String rep is what you want
 
 class WIF a where
   toWIF   :: a -> String

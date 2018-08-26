@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hash.SHA256 (sha256, sha256N, doubleSHA256, {-testing-} test_io_sha) where
+module Hash.SHA256 (sha256, sha256N, doubleSHA256, {-testing-} test_io_sha, doubleSHA256CheckSum) where
 
 import Data.Array (Array, listArray, (!), array)
 import qualified Data.ByteString as BS
@@ -170,4 +170,10 @@ padAndChunkBS bs = map fromByteStringUnsafe
 
     comp_k :: Int -> Int
     comp_k l = case mod (l + 1 + 64) 512 of { 0 -> 0; n -> 512 - n }
+
+-- * Compute the double-SHA256 checksum
+-- ----------------------------------------------------------------------------
+
+doubleSHA256CheckSum :: ByteString -> Word32
+doubleSHA256CheckSum bs = fromBytes $ take 4 $ toBytes $ doubleSHA256 bs
 
