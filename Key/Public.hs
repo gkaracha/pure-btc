@@ -1,11 +1,22 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Key.Public where -- Private (PrivateKey(..)) where
 -- TODO: For now export everything
 
 import Data.Words
 import Encodings.Hex
+import Hash.ECM
 import Utils.Utils (splitInTwo, splitInThree, readHexError)
+import qualified Key.Private as PK
+
+priv_k :: PK.PrivateKey
+priv_k = readHex "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
+
+test :: IO ()
+test = putStrLn $ showHex (publicKeyFromPrivateKey priv_k)
+
+-- TODO: Test fails. look at ~/Desktop/example
 
 -- * Uncompressed public keys
 -- ----------------------------------------------------------------------------
@@ -72,4 +83,23 @@ pubKeyToByteString (CPublicKey cpub)
   = case cpub of
       CPKEven w -> fromBytes (0x02 : toBytes w)
       CPKOdd  w -> fromBytes (0x03 : toBytes w)
+
+-- * Generate a public key from a private key
+-- ----------------------------------------------------------------------------
+
+publicKeyFromPrivateKey :: PK.PrivateKey -> PublicKey
+publicKeyFromPrivateKey pk = case pk of
+  PK.UPrivateKey key -> UPublicKey (publicKeyFromUPrivateKey key)
+  PK.CPrivateKey key -> CPublicKey (publicKeyFromCPrivateKey key)
+  where
+    publicKeyFromUPrivateKey :: PK.UPrivateKey -> UPublicKey
+    publicKeyFromUPrivateKey (PK.UPK (hashECM -> (x,y))) = UPK x y
+
+    publicKeyFromCPrivateKey :: PK.CPrivateKey -> CPublicKey
+    publicKeyFromCPrivateKey (PK.CPK (hashECM -> (x,y)))
+      | even y    = CPKEven x
+      | otherwise = CPKOdd  x
+
+
+
 
