@@ -15,27 +15,27 @@ import qualified Key.Private as PK
 -- ----------------------------------------------------------------------------
 
 -- | Uncompressed public key
-data UPubKey = UPK Word256 Word256 -- (x,y), prefix 0x04, shown as (8 + 256 + 256 = 520 bits)
+data UPublicKey = UPK Word256 Word256 -- (x,y), prefix 0x04, shown as (8 + 256 + 256 = 520 bits)
   deriving (Eq)
 
-instance Hex UPubKey where
+instance Hex UPublicKey where
   showHex (UPK x y) = "04" ++ showHex x ++ showHex y
   readHex str
     | Just ("04",x,y) <- splitInThree 2 64 64 str
     = UPK (readHex x) (readHex y)
-    | otherwise = readHexError "UPubKey" str
+    | otherwise = readHexError "UPublicKey" str
   -- characters: (2 + 64 + 64 = 130 hex digits)
 
 -- * Compressed public keys
 -- ----------------------------------------------------------------------------
 
 -- | Compressed public key
-data CPubKey -- shown as (8 + 256 = 264 bits)
+data CPublicKey -- shown as (8 + 256 = 264 bits)
   = CPKEven Word256 -- y is even (prefix 0x02)
   | CPKOdd  Word256 -- y is odd  (prefix 0x03)
   deriving (Eq)
 
-instance Hex CPubKey where
+instance Hex CPublicKey where
   showHex w = case w of
     CPKEven x -> "02" ++ showHex x
     CPKOdd  x -> "03" ++ showHex x
@@ -43,36 +43,36 @@ instance Hex CPubKey where
     Just (code,word)
       | code == "02" -> CPKEven $ readHex word
       | code == "03" -> CPKOdd  $ readHex word
-    _other -> readHexError "CPubKey" str
+    _other -> readHexError "CPublicKey" str
   -- characters: (2 + 64 = 66 hex digits)
 
 -- * Public keys
 -- ----------------------------------------------------------------------------
 
 -- | Public key
-data PublicKey = UPubKey UPubKey | CPubKey CPubKey
+data PublicKey = UPublicKey UPublicKey | CPublicKey CPublicKey
   deriving (Eq)
 
 instance Hex PublicKey where
-  showHex (UPubKey key) = showHex key
-  showHex (CPubKey key) = showHex key
+  showHex (UPublicKey key) = showHex key
+  showHex (CPublicKey key) = showHex key
   readHex str
     | Just ("04",x,y) <- splitInThree 2 64 64 str
-    = UPubKey $ UPK (readHex x) (readHex y)
+    = UPublicKey $ UPK (readHex x) (readHex y)
     | otherwise = case splitInTwo 2 64 str of
         Just (code,word)
-          | code == "02" -> CPubKey $ CPKEven $ readHex word
-          | code == "03" -> CPubKey $ CPKOdd  $ readHex word
+          | code == "02" -> CPublicKey $ CPKEven $ readHex word
+          | code == "03" -> CPublicKey $ CPKOdd  $ readHex word
         _other -> readHexError "PublicKey" str
 
 -- * Turn a public key into a 'ByteString'
 -- ----------------------------------------------------------------------------
 
 pubKeyToByteString :: PublicKey -> ByteString
-pubKeyToByteString (UPubKey upub)
+pubKeyToByteString (UPublicKey upub)
   = case upub of
       UPK w1 w2 -> fromBytes $ 0x04 : toBytes w1 ++ toBytes w2
-pubKeyToByteString (CPubKey cpub)
+pubKeyToByteString (CPublicKey cpub)
   = case cpub of
       CPKEven w -> fromBytes (0x02 : toBytes w)
       CPKOdd  w -> fromBytes (0x03 : toBytes w)
@@ -82,13 +82,13 @@ pubKeyToByteString (CPubKey cpub)
 
 publicKeyFromPrivateKey :: PK.PrivateKey -> PublicKey
 publicKeyFromPrivateKey pk = case pk of
-  PK.UPrivateKey key -> UPubKey (publicKeyFromUPrivateKey key)
-  PK.CPrivateKey key -> CPubKey (publicKeyFromCPrivateKey key)
+  PK.UPrivateKey key -> UPublicKey (publicKeyFromUPrivateKey key)
+  PK.CPrivateKey key -> CPublicKey (publicKeyFromCPrivateKey key)
   where
-    publicKeyFromUPrivateKey :: PK.UPrivateKey -> UPubKey
+    publicKeyFromUPrivateKey :: PK.UPrivateKey -> UPublicKey
     publicKeyFromUPrivateKey (PK.UPK (hashECM -> (x,y))) = UPK x y
 
-    publicKeyFromCPrivateKey :: PK.CPrivateKey -> CPubKey
+    publicKeyFromCPrivateKey :: PK.CPrivateKey -> CPublicKey
     publicKeyFromCPrivateKey (PK.CPK (hashECM -> (x,y)))
       | even y    = CPKEven x
       | otherwise = CPKOdd  x
@@ -96,11 +96,11 @@ publicKeyFromPrivateKey pk = case pk of
 -- * Switch between compressed and uncompressed public keys
 -- ----------------------------------------------------------------------------
 
-compressPublicKey :: UPubKey -> CPubKey
+compressPublicKey :: UPublicKey -> CPublicKey
 compressPublicKey (UPK x y) | even y    = CPKEven x
                             | otherwise = CPKOdd  x
 
-uncompressPublicKey :: CPubKey -> UPubKey
+uncompressPublicKey :: CPublicKey -> UPublicKey
 uncompressPublicKey (CPKEven x) = uncurry UPK $ uncompress 0x02 x
 uncompressPublicKey (CPKOdd  x) = uncurry UPK $ uncompress 0x03 x
 
