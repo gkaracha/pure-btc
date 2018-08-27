@@ -2,7 +2,7 @@
 
 module Encodings.Base58 (encodeBase58, decodeBase58) where
 
-import Data.Array
+import Data.Array (Ix, Array, (!), listArray)
 import qualified Data.Map as M
 
 -- * Encoding into Base58

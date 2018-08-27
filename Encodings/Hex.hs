@@ -14,8 +14,7 @@ import qualified Data.ByteString as BS
 import Data.Char (ord)
 import Data.List (foldl')
 import Data.Words
--- import Utils.Utils
-import Utils.List
+import Utils.List (pairs)
 
 -- * Class for things that can be printed to and read as hexadecimal strings
 -- ----------------------------------------------------------------------------

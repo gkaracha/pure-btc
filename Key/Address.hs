@@ -3,10 +3,10 @@
 module Key.Address where
 -- TODO: For now export everything
 
-import Encodings.Hex
-import Key.Public
-import Encodings.Base58Check
-import Hash.HASH160
+import Encodings.Hex (readHex)
+import Key.Public (PublicKey, pubKeyToByteString)
+import Encodings.Base58Check (encodeBase58Check)
+import Hash.HASH160 (hash160)
 
 -- * Addresses
 -- ----------------------------------------------------------------------------

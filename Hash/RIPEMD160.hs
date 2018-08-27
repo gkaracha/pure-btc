@@ -7,7 +7,7 @@ module Hash.RIPEMD160 (ripemd160, ripemd160N, doubleRIPEMD160, test_io_ripemd160
 
 import Data.Array (Array, listArray, (!))
 import qualified Data.ByteString as BS
-import Encodings.Hex
+import Encodings.Hex (showHex, printHex)
 import Data.Words
 import Utils.List (listChunksOf)
 

@@ -8,8 +8,8 @@ import Control.Monad (guard)
 import Control.Applicative ((<|>))
 
 import Data.Words
-import Encodings.Hex
-import Encodings.Base58Check
+import Encodings.Hex (Hex(..))
+import Encodings.Base58Check (encodeBase58Check, decodeBase58Check)
 import Utils.Error (readHexError)
 
 -- * "Uncompressed" private keys

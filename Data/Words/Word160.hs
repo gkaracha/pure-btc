@@ -7,7 +7,7 @@ import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Utils.Error
+import Utils.Error (toEnumError, fromEnumError)
 
 -- 160 bits == 20 bytes == 40 hex digits == 5 Word32s
 

@@ -6,7 +6,7 @@ module Utils.Numeric
 , modPow
 ) where
 
-import Data.Bits
+import Data.Bits (shiftL, shiftR)
 
 integerSqrt :: Integer -> Integer
 integerSqrt n

@@ -7,10 +7,10 @@ module Encodings.Base58Check where
 --   https://en.bitcoin.it/wiki/Base58Check_encoding#Creating_a_Base58Check_string
 
 import Data.Words
-import Hash.SHA256
+import Hash.SHA256 (doubleSHA256)
 import Control.Monad (guard)
-import Encodings.Base58
-import Encodings.Hex
+import Encodings.Base58 (encodeBase58, decodeBase58)
+import Encodings.Hex (showHex)
 
 -- * Encoding into Base58Check
 -- ----------------------------------------------------------------------------

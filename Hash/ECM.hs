@@ -5,8 +5,6 @@ module Hash.ECM (hashECM, uncompress) where
 
 -- Elliptic curve multiplication
 
--- TODO: I think we need a function to get the X and the sign to give us back the Y
-
 import Data.Words
 import Utils.Numeric (modPow)
 import Prelude hiding ((^))
