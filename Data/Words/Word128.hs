@@ -7,7 +7,7 @@ import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Utils.Utils
+import Utils.Error
 
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------

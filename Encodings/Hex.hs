@@ -14,7 +14,8 @@ import qualified Data.ByteString as BS
 import Data.Char (ord)
 import Data.List (foldl')
 import Data.Words
-import Utils.Utils
+-- import Utils.Utils
+import Utils.List
 
 -- * Class for things that can be printed to and read as hexadecimal strings
 -- ----------------------------------------------------------------------------
@@ -87,7 +88,7 @@ readHexBytes str
 -- | Turn a hexadecimal string into a bytestring
 readHexByteString :: String -> BS.ByteString
 readHexByteString str
-  | Just ps <- pair str = fromBytes (map fn ps)
+  | Just ps <- pairs str = fromBytes (map fn ps)
   | otherwise = error "readHexByteString: length mismatch"
   where
     fn (c1,c2) = (readHexDigit c1 `rotateL` 4) .|. readHexDigit c2

@@ -10,7 +10,7 @@ import Control.Applicative ((<|>))
 import Data.Words
 import Encodings.Hex
 import Encodings.Base58Check
-import Utils.Utils (readHexError)
+import Utils.Error (readHexError)
 
 -- * "Uncompressed" private keys
 -- ----------------------------------------------------------------------------

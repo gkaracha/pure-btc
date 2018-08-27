@@ -7,34 +7,35 @@ module Key.Public where -- Private (PrivateKey(..)) where
 import Data.Words
 import Encodings.Hex
 import Hash.ECM
-import Utils.Utils (splitInTwo, splitInThree, readHexError)
+import Utils.List (splitInTwo, splitInThree)
+import Utils.Error (readHexError)
 import qualified Key.Private as PK
 
 -- * Uncompressed public keys
 -- ----------------------------------------------------------------------------
 
 -- | Uncompressed public key
-data UPublicKey = UPK Word256 Word256 -- (x,y), prefix 0x04, shown as (8 + 256 + 256 = 520 bits)
+data UPubKey = UPK Word256 Word256 -- (x,y), prefix 0x04, shown as (8 + 256 + 256 = 520 bits)
   deriving (Eq)
 
-instance Hex UPublicKey where
+instance Hex UPubKey where
   showHex (UPK x y) = "04" ++ showHex x ++ showHex y
   readHex str
     | Just ("04",x,y) <- splitInThree 2 64 64 str
     = UPK (readHex x) (readHex y)
-    | otherwise = readHexError "UPublicKey" str
+    | otherwise = readHexError "UPubKey" str
   -- characters: (2 + 64 + 64 = 130 hex digits)
 
 -- * Compressed public keys
 -- ----------------------------------------------------------------------------
 
 -- | Compressed public key
-data CPublicKey -- shown as (8 + 256 = 264 bits)
+data CPubKey -- shown as (8 + 256 = 264 bits)
   = CPKEven Word256 -- y is even (prefix 0x02)
   | CPKOdd  Word256 -- y is odd  (prefix 0x03)
   deriving (Eq)
 
-instance Hex CPublicKey where
+instance Hex CPubKey where
   showHex w = case w of
     CPKEven x -> "02" ++ showHex x
     CPKOdd  x -> "03" ++ showHex x
@@ -42,36 +43,36 @@ instance Hex CPublicKey where
     Just (code,word)
       | code == "02" -> CPKEven $ readHex word
       | code == "03" -> CPKOdd  $ readHex word
-    _other -> readHexError "CPublicKey" str
+    _other -> readHexError "CPubKey" str
   -- characters: (2 + 64 = 66 hex digits)
 
 -- * Public keys
 -- ----------------------------------------------------------------------------
 
 -- | Public key
-data PublicKey = UPublicKey UPublicKey | CPublicKey CPublicKey
+data PublicKey = UPubKey UPubKey | CPubKey CPubKey
   deriving (Eq)
 
 instance Hex PublicKey where
-  showHex (UPublicKey key) = showHex key
-  showHex (CPublicKey key) = showHex key
+  showHex (UPubKey key) = showHex key
+  showHex (CPubKey key) = showHex key
   readHex str
     | Just ("04",x,y) <- splitInThree 2 64 64 str
-    = UPublicKey $ UPK (readHex x) (readHex y)
+    = UPubKey $ UPK (readHex x) (readHex y)
     | otherwise = case splitInTwo 2 64 str of
         Just (code,word)
-          | code == "02" -> CPublicKey $ CPKEven $ readHex word
-          | code == "03" -> CPublicKey $ CPKOdd  $ readHex word
+          | code == "02" -> CPubKey $ CPKEven $ readHex word
+          | code == "03" -> CPubKey $ CPKOdd  $ readHex word
         _other -> readHexError "PublicKey" str
 
 -- * Turn a public key into a 'ByteString'
 -- ----------------------------------------------------------------------------
 
 pubKeyToByteString :: PublicKey -> ByteString
-pubKeyToByteString (UPublicKey upub)
+pubKeyToByteString (UPubKey upub)
   = case upub of
       UPK w1 w2 -> fromBytes $ 0x04 : toBytes w1 ++ toBytes w2
-pubKeyToByteString (CPublicKey cpub)
+pubKeyToByteString (CPubKey cpub)
   = case cpub of
       CPKEven w -> fromBytes (0x02 : toBytes w)
       CPKOdd  w -> fromBytes (0x03 : toBytes w)
@@ -81,13 +82,13 @@ pubKeyToByteString (CPublicKey cpub)
 
 publicKeyFromPrivateKey :: PK.PrivateKey -> PublicKey
 publicKeyFromPrivateKey pk = case pk of
-  PK.UPrivateKey key -> UPublicKey (publicKeyFromUPrivateKey key)
-  PK.CPrivateKey key -> CPublicKey (publicKeyFromCPrivateKey key)
+  PK.UPrivateKey key -> UPubKey (publicKeyFromUPrivateKey key)
+  PK.CPrivateKey key -> CPubKey (publicKeyFromCPrivateKey key)
   where
-    publicKeyFromUPrivateKey :: PK.UPrivateKey -> UPublicKey
+    publicKeyFromUPrivateKey :: PK.UPrivateKey -> UPubKey
     publicKeyFromUPrivateKey (PK.UPK (hashECM -> (x,y))) = UPK x y
 
-    publicKeyFromCPrivateKey :: PK.CPrivateKey -> CPublicKey
+    publicKeyFromCPrivateKey :: PK.CPrivateKey -> CPubKey
     publicKeyFromCPrivateKey (PK.CPK (hashECM -> (x,y)))
       | even y    = CPKEven x
       | otherwise = CPKOdd  x
@@ -95,13 +96,13 @@ publicKeyFromPrivateKey pk = case pk of
 -- * Switch between compressed and uncompressed public keys
 -- ----------------------------------------------------------------------------
 
-compressPublicKey :: UPublicKey -> CPublicKey
+compressPublicKey :: UPubKey -> CPubKey
 compressPublicKey (UPK x y) | even y    = CPKEven x
                             | otherwise = CPKOdd  x
 
--- || uncompressPublicKey :: CPublicKey -> UPublicKey
--- || uncompressPublicKey (CPKEven x) = uncurry UPK $ uncompress 0x02 x
--- || uncompressPublicKey (CPKOdd  x) = uncurry UPK $ uncompress 0x03 x
+uncompressPublicKey :: CPubKey -> UPubKey
+uncompressPublicKey (CPKEven x) = uncurry UPK $ uncompress 0x02 x
+uncompressPublicKey (CPKOdd  x) = uncurry UPK $ uncompress 0x03 x
 
 -- * Testing
 -- ----------------------------------------------------------------------------
@@ -114,26 +115,9 @@ test2 :: Bool
 test2 = showHex (compressPublicKey (readHex "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"))
         == "025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec"
 
-xxx :: Word256
-xxx = 0x5c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec
-
-integerSqrt :: (Bits a, Num a, Ord a) => a -> a
-integerSqrt n
-  | n < 0 = error "integerSqrt works for only nonnegative inputs"
-  | n < 2 = n
-  | otherwise = let small = integerSqrt(n `shiftR` 2) `shiftL` 1 in
-                let large = small + 1                            in
-                if large * large > n then small else large
-
--- ySquared :: Word256 -> Integer -- Y squared
-
-ySqExample :: Integer
-ySqExample = 72185237862168577584485060013711844395664979203634836508005622988529849736436540324281875756090310788600764441396993090859097386939553890332231483301978585789271797315997484410087145395084647339262357227632673997015170744220946631
-
-
--- || test3 :: Bool
--- || test3 = showHex (uncompressPublicKey (readHex "025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec"))
--- ||         == "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"
+test3 :: Bool
+test3 = showHex (uncompressPublicKey (readHex "025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec"))
+        == "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"
 
 
 

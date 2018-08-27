@@ -13,7 +13,10 @@ import Encodings.Base58      ()
 import Encodings.Base58Check ()
 import Encodings.WIF         ()
 
-import Utils.Utils ()
+import Utils.ByteString ()
+import Utils.Error      ()
+import Utils.List       ()
+import Utils.Numeric    ()
 
 import Hash.SHA256    ()
 import Hash.RIPEMD160 ()

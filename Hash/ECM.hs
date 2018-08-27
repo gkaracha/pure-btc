@@ -1,12 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE BangPatterns #-}
 
-module Hash.ECM (hashECM{-, uncompress-}, ySquared) where
+module Hash.ECM (hashECM, uncompress) where
 
 -- Elliptic curve multiplication
 
 -- TODO: I think we need a function to get the X and the sign to give us back the Y
 
 import Data.Words
+import Utils.Numeric (modPow)
 import Prelude hiding ((^))
 import qualified Prelude as P
 
@@ -26,18 +28,14 @@ hashECM :: Word256 -> (Word256,Word256)
 hashECM w | (x,y) <- fastMult genPoint (toInteger w)
           = (fromInteger x, fromInteger y)
 
-
--- | uncompress :: Word8 -> Word256 -> (Word256,Word256) -- prefix == 0x02 or 0x03
--- | uncompress prefix w = (w, fromInteger y)
--- |   where
--- |     x = toInteger w
--- |     b = ((x*x*x+aconst*x+bconst) ^ ((pconst+1) `shiftR` 2)) `mod` pconst
--- |     y | (b + toInteger prefix) `mod` 2 /= 0
--- |       = pconst - b
--- |       | otherwise = b
-
-ySquared :: Word256 -> Integer -- Y squared
-ySquared w = (x ^ 3) + aconst * (x ^ 2) + bconst where x = toInteger w
+uncompress :: Word8 -> Word256 -> (Word256,Word256) -- prefix == 0x02 or 0x03
+uncompress prefix w = (w, fromInteger y)
+  where
+    x = toInteger w
+    b = modPow (x*x*x+aconst*x+bconst) ((pconst+1) `shiftR` 2) pconst
+    y = if (b + toInteger prefix) `mod` 2 /= 0
+          then pconst - b
+          else b
 
 -- * Elliptic curve parameters (secp256k1)
 -- ----------------------------------------------------------------------------

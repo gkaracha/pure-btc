@@ -9,7 +9,7 @@ import Data.Array (Array, listArray, (!))
 import qualified Data.ByteString as BS
 import Encodings.Hex
 import Data.Words
-import Utils.Utils (listChunksOf)
+import Utils.List (listChunksOf)
 
 import qualified Data.ByteString.Char8 as BSC
 

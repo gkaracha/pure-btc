@@ -8,7 +8,7 @@ import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Data.Words.Word128
-import Utils.Utils
+import Utils.Error
 
 -- * Word256, masks, and utilities
 -- ----------------------------------------------------------------------------

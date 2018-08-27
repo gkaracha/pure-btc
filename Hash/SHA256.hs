@@ -7,7 +7,7 @@ import qualified Data.ByteString as BS
 
 import Encodings.Hex
 import Data.Words
-import Utils.Utils (chunksOf)
+import Utils.ByteString (bsChunksOf)
 
 -- * Program Constants
 -- ----------------------------------------------------------------------------
@@ -155,7 +155,7 @@ doubleSHA256 = sha256 . sha256
 -- | Pad a message and partition it into chunks of 512 bits
 padAndChunkBS :: BS.ByteString -> [Word512]
 padAndChunkBS bs = map fromByteStringUnsafe
-                 $ chunksOf 64
+                 $ bsChunksOf 64
                  $ BS.concat [ bs                                           -- message
                              , BS.pack (0x80 : replicate (no_bytes-1) 0x00) -- 1 0..0
                              , toByteString (fromIntegral len :: Word64) ]  -- 64
