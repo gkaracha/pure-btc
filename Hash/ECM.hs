@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hash.ECM (hashECM, uncompress) where
+module Hash.ECM (hashECM{-, uncompress-}, ySquared) where
 
 -- Elliptic curve multiplication
 
@@ -27,14 +27,17 @@ hashECM w | (x,y) <- fastMult genPoint (toInteger w)
           = (fromInteger x, fromInteger y)
 
 
-uncompress :: Word8 -> Word256 -> (Word256,Word256) -- prefix == 0x02 or 0x03
-uncompress prefix w = (w, fromInteger y)
-  where
-    x = toInteger w
-    b = ((x*x*x+aconst*x+bconst) ^ ((pconst+1) `shiftR` 2)) `mod` pconst
-    y | (b + toInteger prefix) `mod` 2 /= 0
-      = pconst - b
-      | otherwise = b
+-- | uncompress :: Word8 -> Word256 -> (Word256,Word256) -- prefix == 0x02 or 0x03
+-- | uncompress prefix w = (w, fromInteger y)
+-- |   where
+-- |     x = toInteger w
+-- |     b = ((x*x*x+aconst*x+bconst) ^ ((pconst+1) `shiftR` 2)) `mod` pconst
+-- |     y | (b + toInteger prefix) `mod` 2 /= 0
+-- |       = pconst - b
+-- |       | otherwise = b
+
+ySquared :: Word256 -> Integer -- Y squared
+ySquared w = (x ^ 3) + aconst * (x ^ 2) + bconst where x = toInteger w
 
 -- * Elliptic curve parameters (secp256k1)
 -- ----------------------------------------------------------------------------

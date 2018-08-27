@@ -92,10 +92,49 @@ publicKeyFromPrivateKey pk = case pk of
       | even y    = CPKEven x
       | otherwise = CPKOdd  x
 
+-- * Switch between compressed and uncompressed public keys
+-- ----------------------------------------------------------------------------
+
+compressPublicKey :: UPublicKey -> CPublicKey
+compressPublicKey (UPK x y) | even y    = CPKEven x
+                            | otherwise = CPKOdd  x
+
+-- || uncompressPublicKey :: CPublicKey -> UPublicKey
+-- || uncompressPublicKey (CPKEven x) = uncurry UPK $ uncompress 0x02 x
+-- || uncompressPublicKey (CPKOdd  x) = uncurry UPK $ uncompress 0x03 x
+
 -- * Testing
 -- ----------------------------------------------------------------------------
 
-test :: Bool
-test = showHex (publicKeyFromPrivateKey (readHex "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"))
-       == "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"
+test1 :: Bool
+test1 = showHex (publicKeyFromPrivateKey (readHex "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"))
+        == "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"
+
+test2 :: Bool
+test2 = showHex (compressPublicKey (readHex "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"))
+        == "025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec"
+
+xxx :: Word256
+xxx = 0x5c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec
+
+integerSqrt :: (Bits a, Num a, Ord a) => a -> a
+integerSqrt n
+  | n < 0 = error "integerSqrt works for only nonnegative inputs"
+  | n < 2 = n
+  | otherwise = let small = integerSqrt(n `shiftR` 2) `shiftL` 1 in
+                let large = small + 1                            in
+                if large * large > n then small else large
+
+-- ySquared :: Word256 -> Integer -- Y squared
+
+ySqExample :: Integer
+ySqExample = 72185237862168577584485060013711844395664979203634836508005622988529849736436540324281875756090310788600764441396993090859097386939553890332231483301978585789271797315997484410087145395084647339262357227632673997015170744220946631
+
+
+-- || test3 :: Bool
+-- || test3 = showHex (uncompressPublicKey (readHex "025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec"))
+-- ||         == "045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176"
+
+
+
 
