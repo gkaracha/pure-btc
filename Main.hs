@@ -27,5 +27,7 @@ import Util.Error           ()
 import Util.List            ()
 import Util.Numeric         ()
 
+import PrettyPrint          ()
+
 main :: IO ()
 main = putStrLn "Remember to load all files to make sure they compile!"
