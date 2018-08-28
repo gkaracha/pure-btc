@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Word160 (Word160, w160ToWords, w160ToBytes) where
+module Data.Words.Word160 (Word160) where
 
-import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Utils.Error (toEnumError, fromEnumError)
+import Utils.Bytes
+import Utils.Words
 
 -- 160 bits == 20 bytes == 40 hex digits == 5 Word32s
 
@@ -90,34 +90,17 @@ instance Integral Word160 where
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
-w160ToWords :: Word160 -> [Word32]
-w160ToWords (W160 i)
-  = [ fromIntegral $ (i .&. 0xFFFFFFFF00000000000000000000000000000000) `shiftR` 128
-    , fromIntegral $ (i .&. 0x00000000FFFFFFFF000000000000000000000000) `shiftR` 96
-    , fromIntegral $ (i .&. 0x0000000000000000FFFFFFFF0000000000000000) `shiftR` 64
-    , fromIntegral $ (i .&. 0x000000000000000000000000FFFFFFFF00000000) `shiftR` 32
-    , fromIntegral $ (i .&. 0x00000000000000000000000000000000FFFFFFFF) ]
+instance ByteLength Word160 where
+  noBytes _ = 20
 
-w160ToBytes :: Word160 -> [Word8]
-w160ToBytes (W160 i)
-  = [ fromIntegral $ (i .&. 0xFF00000000000000000000000000000000000000) `shiftR` 152
-    , fromIntegral $ (i .&. 0x00FF000000000000000000000000000000000000) `shiftR` 144
-    , fromIntegral $ (i .&. 0x0000FF0000000000000000000000000000000000) `shiftR` 136
-    , fromIntegral $ (i .&. 0x000000FF00000000000000000000000000000000) `shiftR` 128
-    , fromIntegral $ (i .&. 0x00000000FF000000000000000000000000000000) `shiftR` 120
-    , fromIntegral $ (i .&. 0x0000000000FF0000000000000000000000000000) `shiftR` 112
-    , fromIntegral $ (i .&. 0x000000000000FF00000000000000000000000000) `shiftR` 104
-    , fromIntegral $ (i .&. 0x00000000000000FF000000000000000000000000) `shiftR` 96
-    , fromIntegral $ (i .&. 0x0000000000000000FF0000000000000000000000) `shiftR` 88
-    , fromIntegral $ (i .&. 0x000000000000000000FF00000000000000000000) `shiftR` 80
-    , fromIntegral $ (i .&. 0x00000000000000000000FF000000000000000000) `shiftR` 72
-    , fromIntegral $ (i .&. 0x0000000000000000000000FF0000000000000000) `shiftR` 64
-    , fromIntegral $ (i .&. 0x000000000000000000000000FF00000000000000) `shiftR` 56
-    , fromIntegral $ (i .&. 0x00000000000000000000000000FF000000000000) `shiftR` 48
-    , fromIntegral $ (i .&. 0x0000000000000000000000000000FF0000000000) `shiftR` 40
-    , fromIntegral $ (i .&. 0x000000000000000000000000000000FF00000000) `shiftR` 32
-    , fromIntegral $ (i .&. 0x00000000000000000000000000000000FF000000) `shiftR` 24
-    , fromIntegral $ (i .&. 0x0000000000000000000000000000000000FF0000) `shiftR` 16
-    , fromIntegral $ (i .&. 0x000000000000000000000000000000000000FF00) `shiftR` 8
-    , fromIntegral $ (i .&. 0x00000000000000000000000000000000000000FF) ]
+instance Bytes Word160 where
+  toBytes   = toBytesGen
+  fromBytes = fromBytesGen
+
+instance WordLength Word160 where
+  noWords _ = 5
+
+instance Words Word160 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
 

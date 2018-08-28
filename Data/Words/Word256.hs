@@ -1,14 +1,16 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Word256 (Word256, w256ToW128s, w128sToW256, w256ToBytes) where
+module Data.Words.Word256 (Word256) where
 
-import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Data.Words.Word128 (Word128, w128ToBytes)
+import Data.Words.Word128 (Word128)
 import Utils.Error (toEnumError, fromEnumError)
+import Utils.Bytes
+import Utils.Words
+import Utils.Split
 
 -- * Word256, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -95,6 +97,11 @@ instance Integral Word256 where
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
+instance Split Word256 where
+  type Half Word256 = Word128
+  toHalves   = w256ToW128s
+  fromHalves = w128sToW256
+
 w256ToW128s :: Word256 -> (Word128, Word128)
 w256ToW128s (W256 i) = (pt1,pt2)
   where
@@ -107,8 +114,17 @@ w128sToW256 (w1,w2) = W256 (pt1 .|. pt2)
     pt1 = fromIntegral w1 `rotateL` 128
     pt2 = fromIntegral w2
 
-w256ToBytes :: Word256 -> [Word8]
-w256ToBytes w = w128ToBytes w1 ++ w128ToBytes w2
-  where
-    (w1,w2) = w256ToW128s w
+instance ByteLength Word256 where
+  noBytes _ = 32
+
+instance Bytes Word256 where
+  toBytes   = toBytesGen
+  fromBytes = fromBytesGen
+
+instance WordLength Word256 where
+  noWords _ = 8
+
+instance Words Word256 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
 

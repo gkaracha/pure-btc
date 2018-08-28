@@ -1,13 +1,16 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Word128 (Word128, w128ToW64s, w64sToW128, w128ToBytes) where
+module Data.Words.Word128 (Word128) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Utils.Error (toEnumError, fromEnumError)
+import Utils.Bytes
+import Utils.Words
+import Utils.Split
 
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -94,6 +97,11 @@ instance Integral Word128 where
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
+instance Split Word128 where
+  type Half Word128 = Word64
+  toHalves   = w128ToW64s
+  fromHalves = w64sToW128
+
 w128ToW64s :: Word128 -> (Word64, Word64)
 w128ToW64s (W128 i) = (pt1,pt2)
   where
@@ -106,23 +114,17 @@ w64sToW128 (w1,w2) = W128 (pt1 .|. pt2)
     pt1 = fromIntegral w1 `rotateL` 64
     pt2 = fromIntegral w2
 
-w128ToBytes :: Word128 -> [Word8]
-w128ToBytes (W128 i) = map fromIntegral ibytes
-  where
-    ibytes = [ (i .&. 0xFF000000000000000000000000000000) `shiftR` 120
-             , (i .&. 0x00FF0000000000000000000000000000) `shiftR` 112
-             , (i .&. 0x0000FF00000000000000000000000000) `shiftR` 104
-             , (i .&. 0x000000FF000000000000000000000000) `shiftR` 96
-             , (i .&. 0x00000000FF0000000000000000000000) `shiftR` 88
-             , (i .&. 0x0000000000FF00000000000000000000) `shiftR` 80
-             , (i .&. 0x000000000000FF000000000000000000) `shiftR` 72
-             , (i .&. 0x00000000000000FF0000000000000000) `shiftR` 64
-             , (i .&. 0x0000000000000000FF00000000000000) `shiftR` 56
-             , (i .&. 0x000000000000000000FF000000000000) `shiftR` 48
-             , (i .&. 0x00000000000000000000FF0000000000) `shiftR` 40
-             , (i .&. 0x0000000000000000000000FF00000000) `shiftR` 32
-             , (i .&. 0x000000000000000000000000FF000000) `shiftR` 24
-             , (i .&. 0x00000000000000000000000000FF0000) `shiftR` 16
-             , (i .&. 0x0000000000000000000000000000FF00) `shiftR` 8
-             , (i .&. 0x000000000000000000000000000000FF) `shiftR` 0  ]
+instance ByteLength Word128 where
+  noBytes _ = 16
+
+instance Bytes Word128 where
+  toBytes   = toBytesGen
+  fromBytes = fromBytesGen
+
+instance WordLength Word128 where
+  noWords _ = 4
+
+instance Words Word128 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
 

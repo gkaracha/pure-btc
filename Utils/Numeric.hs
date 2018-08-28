@@ -8,9 +8,12 @@ module Utils.Numeric
 
 import Data.Bits (shiftL, shiftR)
 
+-- * Efficient operations on Integers
+-- ----------------------------------------------------------------------------
+
 integerSqrt :: Integer -> Integer
 integerSqrt n
-  | n < 0 = error "integerSqrt works for only nonnegative inputs"
+  | n < 0 = error $ "integerSqrt: negative input " ++ show n
   | n < 2 = n
   | otherwise = let small = integerSqrt(n `shiftR` 2) `shiftL` 1 in
                 let large = small + 1                            in

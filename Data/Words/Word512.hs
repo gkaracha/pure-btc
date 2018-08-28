@@ -1,14 +1,16 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Word512 (Word512, w512ToW256s, w256sToW512, w512ToBytes) where
+module Data.Words.Word512 (Word512) where
 
-import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Data.Words.Word256 (Word256, w256ToBytes)
+import Data.Words.Word256 (Word256)
 import Utils.Error (toEnumError, fromEnumError)
+import Utils.Bytes
+import Utils.Words
+import Utils.Split
 
 -- * Word512, masks, and utilities
 -- ----------------------------------------------------------------------------
@@ -95,6 +97,11 @@ instance Integral Word512 where
 -- * Specialized Instances
 -- ----------------------------------------------------------------------------
 
+instance Split Word512 where
+  type Half Word512 = Word256
+  toHalves   = w512ToW256s
+  fromHalves = w256sToW512
+
 w512ToW256s :: Word512 -> (Word256, Word256)
 w512ToW256s (W512 i) = (pt1,pt2)
   where
@@ -107,10 +114,19 @@ w256sToW512 (w1,w2) = W512 (pt1 .|. pt2)
     pt1 = fromIntegral w1 `rotateL` 256
     pt2 = fromIntegral w2
 
-w512ToBytes :: Word512 -> [Word8]
-w512ToBytes w = w256ToBytes w1 ++ w256ToBytes w2
-  where
-    (w1,w2) = w512ToW256s w
-
 -- TODO: Change some rotates to shifts?
+
+instance ByteLength Word512 where
+  noBytes _ = 64
+
+instance Bytes Word512 where
+  toBytes   = toBytesGen
+  fromBytes = fromBytesGen
+
+instance WordLength Word512 where
+  noWords _ = 16
+
+instance Words Word512 where
+  toWords   = toWordsGen
+  fromWords = fromWordsGen
 
