@@ -16,49 +16,49 @@ import Util.Error (readHexError)
 -- ----------------------------------------------------------------------------
 
 -- | Private key, to create uncompressed public keys
-newtype UPrivateKey = UPK Word256
+newtype UPrivateKey = UPriKey Word256
   deriving (Eq, Ord)
 
 instance Hex UPrivateKey where
-  showHex (UPK key) = showHex key
+  showHex (UPriKey key) = showHex key
   readHex str
-    | length str == 64 = UPK (readHex str)
+    | length str == 64 = UPriKey (readHex str)
     | otherwise        = readHexError "UPrivateKey" str
 
 -- | "Uncompressed" private key to WIF format
 upkToWIF :: UPrivateKey -> String
-upkToWIF (UPK w) = encodeBase58Check 0x80 w
+upkToWIF (UPriKey w) = encodeBase58Check 0x80 w
 
 -- | Parse a 'ByteString' as an "uncompressed" private key
 bsToUPK :: ByteString -> Maybe UPrivateKey
 bsToUPK bs = do
   guard (BS.length bs == 32)
-  UPK <$> fromByteString bs
+  UPriKey <$> fromByteString bs
 
 -- * "Compressed" private keys
 -- ----------------------------------------------------------------------------
 
 -- | Private key, to create compressed public keys
-newtype CPrivateKey = CPK Word256
+newtype CPrivateKey = CPriKey Word256
   deriving (Eq, Ord)
 
 instance Hex CPrivateKey where
-  showHex (CPK key) = showHex key ++ "01"
+  showHex (CPriKey key) = showHex key ++ "01"
   readHex str
-    | (w,"01") <- splitAt 64 str = CPK (readHex w)
+    | (w,"01") <- splitAt 64 str = CPriKey (readHex w)
     | otherwise = readHexError "CPrivateKey" str
 
 -- | "Compressed" private key to WIF format
 cpkToWIF :: CPrivateKey -> String
-cpkToWIF (CPK w) = encodeBase58Check 0x80
-                     (fromBytes (toBytes w ++ [0x01]) :: ByteString)
+cpkToWIF (CPriKey w) = encodeBase58Check 0x80
+                         (fromBytes (toBytes w ++ [0x01]) :: ByteString)
 
 -- | Parse a 'ByteString' as a "compressed" private key
 bsToCPK :: ByteString -> Maybe CPrivateKey
 bsToCPK bs = do
   guard (BS.length bs == 33)
   guard (BS.index bs 32 == 0x01)
-  CPK <$> fromByteString (BS.take 32 bs)
+  CPriKey <$> fromByteString (BS.take 32 bs)
 
 -- * Private keys ("Compressed" / "Uncompressed")
 -- ----------------------------------------------------------------------------
