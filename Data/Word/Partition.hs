@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Partition
+module Data.Word.Partition
 ( ByteLength(..)
 , Bytes(..)
 , toBytesGen

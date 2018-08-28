@@ -2,10 +2,10 @@
 
 module Main where
 
-import Data.Words.Word128 ()
-import Data.Words.Word160 ()
-import Data.Words.Word256 ()
-import Data.Words.Word512 ()
+import Data.Word.Word128 ()
+import Data.Word.Word160 ()
+import Data.Word.Word256 ()
+import Data.Word.Word512 ()
 import Data.Words         ()
 
 import Encodings.Hex         ()

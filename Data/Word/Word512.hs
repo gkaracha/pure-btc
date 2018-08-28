@@ -1,14 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Word512 (Word512) where
+module Data.Word.Word512 (Word512) where
 
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Data.Words.Word256 (Word256)
 import Utils.Error (toEnumError, fromEnumError)
-import Data.Words.Partition
+import Data.Word.Word256 (Word256)
+import Data.Word.Partition
 
 -- * Word512, masks, and utilities
 -- ----------------------------------------------------------------------------

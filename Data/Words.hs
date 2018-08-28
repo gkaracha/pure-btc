@@ -4,20 +4,20 @@
 -- Re-export all word types
 module Data.Words
 ( module Data.Bits
-, module Data.Words.Partition
+, module Data.Word.Partition
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512, BS.ByteString
 , bsToInteger, integerToBytes, integerToBS, fromByteString, fromByteStringUnsafe
 , revWord32 -- TODO: ADD MORE OPERATIONS AND REMOVE THIS ONE
 ) where
 
 import Data.Word
-import Data.Words.Word128 (Word128)
-import Data.Words.Word160 (Word160)
-import Data.Words.Word256 (Word256)
-import Data.Words.Word512 (Word512)
+import Data.Word.Word128 (Word128)
+import Data.Word.Word160 (Word160)
+import Data.Word.Word256 (Word256)
+import Data.Word.Word512 (Word512)
 import qualified Data.ByteString as BS
 
-import Data.Words.Partition
+import Data.Word.Partition
 
 import Data.Bits
 import Data.List (foldl')

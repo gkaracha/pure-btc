@@ -1,14 +1,14 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Data.Words.Word128 (Word128) where
+module Data.Word.Word128 (Word128) where
 
 import Data.Word
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Utils.Error (toEnumError, fromEnumError)
-import Data.Words.Partition
+import Data.Word.Partition
 
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------
