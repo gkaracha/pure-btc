@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE BangPatterns #-}
 
-module Utils.Numeric
+module Util.Numeric
 ( integerSqrt
 , modPow
 ) where

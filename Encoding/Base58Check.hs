@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE ScopedTypeVariables #-} -- TODO: Remove
 
-module Encodings.Base58Check where
+module Encoding.Base58Check where
 
 -- ENCODING SOURCE:
 --   https://en.bitcoin.it/wiki/Base58Check_encoding#Creating_a_Base58Check_string
@@ -9,8 +9,8 @@ module Encodings.Base58Check where
 import Data.Words
 import Hash.SHA256 (doubleSHA256)
 import Control.Monad (guard)
-import Encodings.Base58 (encodeBase58, decodeBase58)
-import Encodings.Hex (showHex)
+import Encoding.Base58 (encodeBase58, decodeBase58)
+import Encoding.Hex (showHex)
 
 -- * Encoding into Base58Check
 -- ----------------------------------------------------------------------------

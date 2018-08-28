@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Encodings.Base58 (encodeBase58, decodeBase58) where
+module Encoding.Base58 (encodeBase58, decodeBase58) where
 
 import Data.Array (Ix, Array, (!), listArray)
 import qualified Data.Map as M

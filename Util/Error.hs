@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils.Error
+module Util.Error
 ( toEnumError
 , fromEnumError
 , readHexError

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Encodings.Hex
+module Encoding.Hex
 ( Hex(..)
 , showHexBytes, readHexDigit, readHexBytes
 , getHexLine, getHexWords, getHexLines, printHex
@@ -14,7 +14,7 @@ import qualified Data.ByteString as BS
 import Data.Char (ord)
 import Data.List (foldl')
 import Data.Words
-import Utils.List (pairs)
+import Util.List (pairs)
 
 -- * Class for things that can be printed to and read as hexadecimal strings
 -- ----------------------------------------------------------------------------

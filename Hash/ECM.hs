@@ -6,7 +6,7 @@ module Hash.ECM (hashECM, uncompress) where
 -- Elliptic curve multiplication
 
 import Data.Words
-import Utils.Numeric (modPow)
+import Util.Numeric (modPow)
 import Prelude hiding ((^))
 import qualified Prelude as P
 

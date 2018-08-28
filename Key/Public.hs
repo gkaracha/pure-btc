@@ -5,10 +5,10 @@ module Key.Public where -- Private (PrivateKey(..)) where
 -- TODO: For now export everything
 
 import Data.Words
-import Encodings.Hex (Hex(..))
+import Encoding.Hex (Hex(..))
 import Hash.ECM (hashECM, uncompress)
-import Utils.List (splitInTwo, splitInThree)
-import Utils.Error (readHexError)
+import Util.List (splitInTwo, splitInThree)
+import Util.Error (readHexError)
 import qualified Key.Private as PK
 
 -- * Uncompressed public keys

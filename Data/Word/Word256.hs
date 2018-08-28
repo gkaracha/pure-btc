@@ -6,7 +6,7 @@ module Data.Word.Word256 (Word256) where
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Utils.Error (toEnumError, fromEnumError)
+import Util.Error (toEnumError, fromEnumError)
 import Data.Word.Word128 (Word128)
 import Data.Word.Partition
 

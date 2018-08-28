@@ -5,9 +5,9 @@ module Hash.SHA256 (sha256, sha256N, doubleSHA256, {-testing-} test_io_sha, doub
 import Data.Array (Array, listArray, (!), array)
 import qualified Data.ByteString as BS
 
-import Encodings.Hex (showHex)
+import Encoding.Hex (showHex)
 import Data.Words
-import Utils.ByteString (bsChunksOf)
+import Util.ByteString (bsChunksOf)
 
 -- * Program Constants
 -- ----------------------------------------------------------------------------

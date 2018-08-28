@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils.List
+module Util.List
 ( listChunksOf
 , pairs
 , splitInTwo

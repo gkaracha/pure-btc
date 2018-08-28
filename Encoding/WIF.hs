@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Encodings.WIF where
-
+module Encoding.WIF where
 
 -- TODO: Make sure that a String rep is what you want
 

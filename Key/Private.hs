@@ -8,9 +8,9 @@ import Control.Monad (guard)
 import Control.Applicative ((<|>))
 
 import Data.Words
-import Encodings.Hex (Hex(..))
-import Encodings.Base58Check (encodeBase58Check, decodeBase58Check)
-import Utils.Error (readHexError)
+import Encoding.Hex (Hex(..))
+import Encoding.Base58Check (encodeBase58Check, decodeBase58Check)
+import Util.Error (readHexError)
 
 -- * "Uncompressed" private keys
 -- ----------------------------------------------------------------------------

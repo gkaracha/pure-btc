@@ -5,7 +5,7 @@ module Data.Word.Word160 (Word160) where
 import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
-import Utils.Error (toEnumError, fromEnumError)
+import Util.Error (toEnumError, fromEnumError)
 import Data.Word.Partition
 
 -- 160 bits == 20 bytes == 40 hex digits == 5 Word32s

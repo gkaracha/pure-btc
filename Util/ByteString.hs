@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Utils.ByteString
+module Util.ByteString
 ( bsChunksOf
 ) where
 
