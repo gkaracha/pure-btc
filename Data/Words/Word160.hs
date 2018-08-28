@@ -6,8 +6,7 @@ import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Utils.Error (toEnumError, fromEnumError)
-import Utils.Bytes
-import Utils.Words
+import Data.Words.Partition
 
 -- 160 bits == 20 bytes == 40 hex digits == 5 Word32s
 

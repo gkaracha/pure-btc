@@ -8,9 +8,7 @@ import Data.Bits
 import Data.Function (on)
 import Data.Ratio ((%))
 import Utils.Error (toEnumError, fromEnumError)
-import Utils.Bytes
-import Utils.Words
-import Utils.Split
+import Data.Words.Partition
 
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------

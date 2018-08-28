@@ -4,9 +4,7 @@
 -- Re-export all word types
 module Data.Words
 ( module Data.Bits
-, module Utils.Bytes
-, module Utils.Words
-, module Utils.Split
+, module Data.Words.Partition
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512, BS.ByteString
 , bsToInteger, integerToBytes, integerToBS, fromByteString, fromByteStringUnsafe
 , revWord32 -- TODO: ADD MORE OPERATIONS AND REMOVE THIS ONE
@@ -19,9 +17,7 @@ import Data.Words.Word256 (Word256)
 import Data.Words.Word512 (Word512)
 import qualified Data.ByteString as BS
 
-import Utils.Bytes
-import Utils.Words
-import Utils.Split
+import Data.Words.Partition
 
 import Data.Bits
 import Data.List (foldl')
