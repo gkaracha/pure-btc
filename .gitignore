@@ -1,0 +1,13 @@
+
+# Vim
+*~
+.*.sw[op]
+
+# Emacs
+\#*\#
+.\#*
+
+# Haskell
+*.hi
+*.o
+
