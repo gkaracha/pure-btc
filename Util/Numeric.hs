@@ -1,6 +1,20 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE BangPatterns #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Util.Numeric
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Utility functions operating on numeric types.
+--
+-----------------------------------------------------------------------------
+
 module Util.Numeric
 ( integerSqrt
 , modPow

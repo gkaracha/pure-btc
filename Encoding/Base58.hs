@@ -1,6 +1,26 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Encoding.Base58 (encodeBase58, decodeBase58) where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Encoding.Base58
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Base58 encoding.
+--
+-----------------------------------------------------------------------------
+
+module Encoding.Base58
+( -- * Base58 encoding
+  encodeBase58
+
+  -- * Base58 decoding
+, decodeBase58
+) where
 
 import Data.Array (Ix, Array, (!), listArray)
 import qualified Data.Map as M

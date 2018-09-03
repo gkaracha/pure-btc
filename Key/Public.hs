@@ -1,7 +1,21 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Key.Public where -- Private (PrivateKey(..)) where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Key.Public
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Public keys.
+--
+-----------------------------------------------------------------------------
+
+module Key.Public where
 -- TODO: For now export everything
 
 import Data.Words

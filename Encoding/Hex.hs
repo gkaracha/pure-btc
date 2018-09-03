@@ -1,8 +1,27 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Encoding.Hex
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Hexadeximal representation of unsigned integral types.
+--
+-----------------------------------------------------------------------------
+
 module Encoding.Hex
-( Hex(..)
+( -- * The @'Hex'@ class
+  Hex(..)
+
+  -- * Utilities
 , showHexBytes, readHexDigit, readHexBytes
+
+  -- * IO operations
 , getHexLine, getHexWords, getHexLines, printHex
 ) where
 {-
@@ -64,18 +83,18 @@ instance Hex BS.ByteString where
 
 -- | Show in hexadecimal anything that consists of bytes (can be used as the
 -- default implementation of 'showHex' if the type is also an instance of
--- 'Bytes')
+-- 'Bytes').
 showHexBytes :: Bytes a => a -> String
 showHexBytes = concatMap showHexWord8 . toBytes
 
--- | Show a single byte in hexadecimal (two hex digits)
+-- | Show a single byte in hexadecimal (two hex digits).
 showHexWord8 :: Word8 -> String
 showHexWord8 w = replicate (2 - length h) '0' ++ h where h = N.showHex w ""
 
 -- * Hexadecimal parsing utilities
 -- ----------------------------------------------------------------------------
 
--- | Turn a hexadecimal string into a number
+-- | Turn a hexadecimal string into a number.
 readHexBytes :: (Num a, Bytes a) => String -> a
 readHexBytes str
   | noBytes result * 2 == length str = result -- each byte corresponds to two hex digits
@@ -84,7 +103,7 @@ readHexBytes str
     result = fromInteger
            $ foldl' (\acc x -> 16*acc + readHexDigit x) 0 str
 
--- | Turn a hexadecimal string into a bytestring
+-- | Turn a hexadecimal string into a bytestring.
 readHexByteString :: String -> BS.ByteString
 readHexByteString str
   | Just ps <- pairs str = fromBytes (map fn ps)
@@ -92,7 +111,7 @@ readHexByteString str
   where
     fn (c1,c2) = (readHexDigit c1 `rotateL` 4) .|. readHexDigit c2
 
--- | Turn a hexadecimal character into a number
+-- | Turn a hexadecimal character into a number.
 readHexDigit :: Num a => Char -> a
 readHexDigit c
   | ordc >= 48, ordc <= 57  {- 0..9 -} = fromIntegral (ordc - 48)
@@ -106,19 +125,19 @@ readHexDigit c
 -- * Hexadecimal strings input / output
 -- ----------------------------------------------------------------------------
 
--- | Parse a line as a hexadecimal
+-- | Parse a line as a hexadecimal.
 getHexLine :: Hex a => IO a
 getHexLine = readHex <$> getLine
 
--- | Parse a line as a space-separated hexadecimals
+-- | Parse a line as a space-separated hexadecimals.
 getHexWords :: Hex a => IO [a]
 getHexWords = map readHex . words <$> getLine
 
--- | Parse a file as a newline-separated hexadecimals
+-- | Parse a file as a newline-separated hexadecimals.
 getHexLines :: Hex a => IO [a]
 getHexLines = map readHex . lines <$> getContents
 
--- | Print something in hexadecimal and change line
+-- | Print something in hexadecimal and change line.
 printHex :: Hex a => a -> IO ()
 printHex = putStrLn . showHex
 

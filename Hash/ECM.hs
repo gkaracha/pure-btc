@@ -1,9 +1,27 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE BangPatterns #-}
 
-module Hash.ECM (hashECM, uncompress) where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Hash.ECM
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Elliptic curve multiplication (ECM) algorithm.
+--
+-----------------------------------------------------------------------------
 
--- Elliptic curve multiplication
+module Hash.ECM
+( -- * Elliptic curve multiplication hashing
+  hashECM
+
+  -- * Public key decompression
+, uncompress
+) where
 
 import Data.Words
 import Util.Numeric (modPow)
@@ -21,11 +39,14 @@ type Point3D = (Integer, Integer, Integer)
 -- * Interface
 -- ----------------------------------------------------------------------------
 
--- | Elliptic curve multiplication hashing
+-- | Elliptic curve multiplication. Given a word @k@, generate point @(x,y)@,
+-- where @(x,y) == k*G@.
 hashECM :: Word256 -> (Word256,Word256)
 hashECM w | (x,y) <- fastMult genPoint (toInteger w)
           = (fromInteger x, fromInteger y)
 
+-- | Uncompress a public key (represented as a 'Word256'). Given the prefix
+-- byte (which is either 0x02 or 0x03) and @x@, compute @(x,y)@.
 uncompress :: Word8 -> Word256 -> (Word256,Word256) -- prefix == 0x02 or 0x03
 uncompress prefix w = (w, fromInteger y)
   where

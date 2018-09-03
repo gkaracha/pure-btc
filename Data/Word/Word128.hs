@@ -1,6 +1,20 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Word.Word128
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Unsigned integral type with a size of 128 bits.
+--
+-----------------------------------------------------------------------------
+
 module Data.Word.Word128 (Word128) where
 
 import Data.Word
@@ -13,9 +27,8 @@ import Data.Word.Partition
 -- * Word128, masks, and utilities
 -- ----------------------------------------------------------------------------
 
+-- | A 'Word128' is an unsigned integral type, with a size of 128 bits.
 newtype Word128 = W128 { w128 :: Integer }
--- TODO: representation as an Integer is not the most efficient but at least
--- keeps things simple. For now.
 
 mask128 :: Integer
 mask128 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -100,12 +113,14 @@ instance Split Word128 where
   toHalves   = w128ToW64s
   fromHalves = w64sToW128
 
+-- | Split a 'Word128' into two 'Word64's
 w128ToW64s :: Word128 -> (Word64, Word64)
 w128ToW64s (W128 i) = (pt1,pt2)
   where
     pt1 = fromIntegral $ (i .&. mask128L) `rotateR` 64
     pt2 = fromIntegral $ (i .&. mask128R)
 
+-- | Combine two 'Word64's into a 'Word128'
 w64sToW128 :: (Word64, Word64) -> Word128
 w64sToW128 (w1,w2) = W128 (pt1 .|. pt2)
   where

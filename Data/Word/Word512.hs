@@ -1,6 +1,20 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Word.Word512
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Unsigned integral type with a size of 512 bits.
+--
+-----------------------------------------------------------------------------
+
 module Data.Word.Word512 (Word512) where
 
 import Data.Bits
@@ -13,9 +27,8 @@ import Data.Word.Partition
 -- * Word512, masks, and utilities
 -- ----------------------------------------------------------------------------
 
+-- | A 'Word512' is an unsigned integral type, with a size of 512 bits.
 newtype Word512 = W512 { w512 :: Integer }
--- TODO: representation as an Integer is not the most efficient but at least
--- keeps things simple. For now.
 
 mask512 :: Integer
 mask512 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -100,12 +113,14 @@ instance Split Word512 where
   toHalves   = w512ToW256s
   fromHalves = w256sToW512
 
+-- | Split a 'Word512' into two 'Word256's
 w512ToW256s :: Word512 -> (Word256, Word256)
 w512ToW256s (W512 i) = (pt1,pt2)
   where
     pt1 = fromInteger $ (i .&. mask512L) `rotateR` 256
     pt2 = fromInteger $ (i .&. mask512R)
 
+-- | Combine two 'Word256's into a 'Word512'
 w256sToW512 :: (Word256, Word256) -> Word512
 w256sToW512 (w1,w2) = W512 (pt1 .|. pt2)
   where

@@ -1,6 +1,26 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hash.SHA256 (sha256, sha256N, doubleSHA256, {-testing-} test_io_sha, doubleSHA256CheckSum) where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Hash.SHA256
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Implementation of hashing algorithm SHA256.
+--
+-----------------------------------------------------------------------------
+
+module Hash.SHA256
+( -- * The hashing functions
+  sha256, sha256N, doubleSHA256
+
+  -- * Testing (Drop these and write proper tests)
+, test_io_sha
+) where
 
 import Data.Array (Array, listArray, (!), array)
 import qualified Data.ByteString as BS
@@ -67,25 +87,25 @@ lS1 x = (x `rotateR` 17) `xor` (x `rotateR` 19) `xor` (x `shiftR` 10)
 -- * Testing
 -- ----------------------------------------------------------------------------
 
--- || sha256_io_bytestring :: BS.ByteString -> IO ()
--- || sha256_io_bytestring = putStrLn . showHex . sha256hash . padAndChunkBS
+-- sha256_io_bytestring :: BS.ByteString -> IO ()
+-- sha256_io_bytestring = putStrLn . showHex . sha256hash . padAndChunkBS
 
 test_io_sha :: (BS.ByteString -> BS.ByteString) -> BS.ByteString -> IO ()
 test_io_sha hash bs = putStrLn $ showHex $ hash bs
 
--- |?| -- if you want to try a string, not a file, do
--- |?| --
--- |?| -- $ echo -n abc | sha256sum
--- |?| -- ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  -
--- |?| -- $ echo -n "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" | sha256sum
--- |?| -- 248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1  -
--- |?|
--- |?| -- "abc"
--- |?| --   ==> ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
--- |?|
--- |?| -- "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
--- |?| --   ==> 248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1
--- |?|
+--  -- if you want to try a string, not a file, do
+--  --
+--  -- $ echo -n abc | sha256sum
+--  -- ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  -
+--  -- $ echo -n "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" | sha256sum
+--  -- 248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1  -
+--
+--  -- "abc"
+--  --   ==> ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+--
+--  -- "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+--  --   ==> 248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1
+--
 
 -- * Auxiliary types and operations
 -- ----------------------------------------------------------------------------
@@ -136,16 +156,16 @@ sha256hash mn = partWord256ToWord256 $ loop mn (h01,h02,h03,h04,h05,h06,h07,h08)
 -- * SHA256 Interface
 -- ----------------------------------------------------------------------------
 
--- | Apply the SHA256 algorithm on a bytestring
+-- | Apply the SHA256 hashing algorithm on a 'ByteString'.
 sha256 :: BS.ByteString -> BS.ByteString
 sha256 = toByteString . sha256hash . padAndChunkBS
 
--- | Apply the SHA256 algorithm N times on a bytestring
+-- | Apply the RSHA25 hashing algorithm N times on a 'ByteString'.
 sha256N :: Int -> BS.ByteString -> BS.ByteString
 sha256N n msg | n <= 0    = msg
               | otherwise = sha256N (n-1) (sha256 msg)
 
--- | Apply the SHA256 algorithm two times on a bytestring (used often)
+-- | Apply the SHA256 hashing algorithm twice on a 'ByteString'.
 doubleSHA256 :: BS.ByteString -> BS.ByteString
 doubleSHA256 = sha256 . sha256
 
@@ -171,9 +191,9 @@ padAndChunkBS bs = map fromByteStringUnsafe
     comp_k :: Int -> Int
     comp_k l = case mod (l + 1 + 64) 512 of { 0 -> 0; n -> 512 - n }
 
--- * Compute the double-SHA256 checksum
--- ----------------------------------------------------------------------------
-
-doubleSHA256CheckSum :: ByteString -> Word32
-doubleSHA256CheckSum bs = fromBytes $ take 4 $ toBytes $ doubleSHA256 bs
+-- -- * Compute the double-SHA256 checksum
+-- -- ----------------------------------------------------------------------------
+--
+-- doubleSHA256CheckSum :: ByteString -> Word32
+-- doubleSHA256CheckSum bs = fromBytes $ take 4 $ toBytes $ doubleSHA256 bs
 

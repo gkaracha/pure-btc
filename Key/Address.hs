@@ -1,5 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Key.Address
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Addresses.
+--
+-----------------------------------------------------------------------------
+
 module Key.Address where
 -- TODO: For now export everything
 

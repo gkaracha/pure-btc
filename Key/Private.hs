@@ -1,5 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Key.Private
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Private keys.
+--
+-----------------------------------------------------------------------------
+
 module Key.Private where -- (PrivateKey(..)) where
 -- TODO: For now export everything
 
@@ -12,7 +26,7 @@ import Encoding.Hex (Hex(..))
 import Encoding.Base58Check (encodeBase58Check, decodeBase58Check)
 import Util.Error (readHexError)
 
--- * "Uncompressed" private keys
+-- * `Uncompressed` private keys
 -- ----------------------------------------------------------------------------
 
 -- | Private key, to create uncompressed public keys
@@ -25,7 +39,7 @@ instance Hex UPrivateKey where
     | length str == 64 = UPriKey (readHex str)
     | otherwise        = readHexError "UPrivateKey" str
 
--- | "Uncompressed" private key to WIF format
+-- | `Uncompressed` private key to WIF format
 upkToWIF :: UPrivateKey -> String
 upkToWIF (UPriKey w) = encodeBase58Check 0x80 w
 
@@ -35,7 +49,7 @@ bsToUPK bs = do
   guard (BS.length bs == 32)
   UPriKey <$> fromByteString bs
 
--- * "Compressed" private keys
+-- * `Compressed` private keys
 -- ----------------------------------------------------------------------------
 
 -- | Private key, to create compressed public keys
@@ -48,7 +62,7 @@ instance Hex CPrivateKey where
     | (w,"01") <- splitAt 64 str = CPriKey (readHex w)
     | otherwise = readHexError "CPrivateKey" str
 
--- | "Compressed" private key to WIF format
+-- | `Compressed` private key to WIF format
 cpkToWIF :: CPrivateKey -> String
 cpkToWIF (CPriKey w) = encodeBase58Check 0x80
                          (fromBytes (toBytes w ++ [0x01]) :: ByteString)
@@ -60,7 +74,7 @@ bsToCPK bs = do
   guard (BS.index bs 32 == 0x01)
   CPriKey <$> fromByteString (BS.take 32 bs)
 
--- * Private keys ("Compressed" / "Uncompressed")
+-- * Private keys (`Compressed` / `Uncompressed`)
 -- ----------------------------------------------------------------------------
 
 data PrivateKey = UPrivateKey UPrivateKey | CPrivateKey CPrivateKey

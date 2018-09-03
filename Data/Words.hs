@@ -1,13 +1,37 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- Re-export all word types
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Words
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  ???
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Unsigned integer types and standard operations on them.
+--
+-----------------------------------------------------------------------------
+
 module Data.Words
-( module Data.Bits
-, module Data.Word.Partition
+( -- * Bitwise operations for integers
+  Bits(..)
+
+  -- * Word partitioning
+, ByteLength(..), Bytes(..), toBytesGen, fromBytesGen
+, WordLength(..), Words(..), toWordsGen, fromWordsGen
+, Split(..)
+
+  -- * Unsigned integral types
 , Word8, Word16, Word32, Word64, Word128, Word160, Word256, Word512, BS.ByteString
+
+  -- * ByteString-Integer conversions
 , bsToInteger, integerToBytes, integerToBS, fromByteString, fromByteStringUnsafe
-, revWord32 -- TODO: ADD MORE OPERATIONS AND REMOVE THIS ONE
+
+  -- * Misc
+, revWord32
 ) where
 
 import Data.Word
@@ -17,17 +41,23 @@ import Data.Word.Word256 (Word256)
 import Data.Word.Word512 (Word512)
 import qualified Data.ByteString as BS
 
-import Data.Word.Partition
+import Data.Word.Partition ( ByteLength(..), Bytes(..)
+                           , toBytesGen, fromBytesGen
+                           , WordLength(..), Words(..)
+                           , toWordsGen, fromWordsGen
+                           , Split(..) )
 
-import Data.Bits
+import Data.Bits (Bits(..))
 import Data.List (foldl')
 
 -- * Parse ByteStrings as words
 -- ----------------------------------------------------------------------------
 
+-- | Convert a 'ByteString' into an 'Integer'.
 bsToInteger :: BS.ByteString -> Integer
 bsToInteger = foldl' (\a w -> (a `shiftL` 8) .|. fromIntegral w) 0 . BS.unpack
 
+-- | Convert an 'Integer' into a list of bytes.
 integerToBytes :: Integer -> [Word8]
 integerToBytes 0 = [0x00]
 integerToBytes i = aux [] i
@@ -36,6 +66,7 @@ integerToBytes i = aux [] i
     aux acc n | (q,r) <- quotRem n 256
               = aux (fromIntegral r : acc) q
 
+-- | Convert an 'Integer' into a 'ByteString'.
 integerToBS :: Integer -> BS.ByteString
 integerToBS = fromBytes . integerToBytes
 
@@ -51,12 +82,9 @@ fromByteStringUnsafe bs = case fromByteString bs of
   Just word -> word
   Nothing   -> error "fromByteStringUnsafe: Nothing"
 
--- * Encoding Changes
+-- * Misc
 -- ----------------------------------------------------------------------------
 
 revWord32 :: Word32 -> Word32
 revWord32 = fromBytes . reverse . toBytes
-
--- TODO: Big endian for bits
--- TODO: Little endian for bytes
 

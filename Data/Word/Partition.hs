@@ -1,17 +1,28 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Word.Partition
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Partitioning of unsigned integral types into chunks of different sizes.
+--
+-----------------------------------------------------------------------------
+
 module Data.Word.Partition
-( ByteLength(..)
-, Bytes(..)
-, toBytesGen
-, fromBytesGen
---
-, WordLength(..)
-, Words(..)
-, toWordsGen
-, fromWordsGen
---
+( -- * Partition unsigned integers to bytes
+  ByteLength(..), Bytes(..), toBytesGen, fromBytesGen
+
+  -- * Partition unsigned integers to Word32s
+, WordLength(..), Words(..), toWordsGen, fromWordsGen
+
+  -- * Splitting words in half
 , Split(..)
 ) where
 
@@ -20,7 +31,7 @@ import Data.Bits (shiftL, shiftR, (.&.), (.|.))
 import qualified Data.ByteString as BS
 import Data.List (unfoldr, foldl')
 
--- * A class for all types whose representation can be mesaured in bytes
+-- * A class for all types whose representation can be measured in bytes
 -- ----------------------------------------------------------------------------
 
 class ByteLength a where
@@ -67,7 +78,7 @@ instance Bytes BS.ByteString where
 -- * Utilities and generic implementations
 -- ----------------------------------------------------------------------------
 
--- | Generic function for partitioning a word into Word8s
+-- | Generic function for partitioning a word into 'Word8's.
 toBytesGen :: (Integral a, ByteLength a) => a -> [Word8]
 toBytesGen num = unfoldr gen (noBytes num)
   where
@@ -77,7 +88,7 @@ toBytesGen num = unfoldr gen (noBytes num)
     gen i | i <= 0       = Nothing
           | k <- (i-1)*8 = Just (fromInteger $ (int .&. (0xFF `shiftL` k)) `shiftR` k, i-1)
 
--- | Generic function for obtaining a word from a list of Word8s
+-- | Generic function for obtaining a word from a list of 'Word8's.
 fromBytesGen :: (Num b, ByteLength b) => [Word8] -> b
 fromBytesGen ws
   | length ws == noBytes result = result
@@ -112,7 +123,7 @@ instance Words Word64 where
 -- * Utilities and generic implementations
 -- ----------------------------------------------------------------------------
 
--- | Generic function for partitioning a word into Word32s
+-- | Generic function for partitioning a word into 'Word32's.
 toWordsGen :: (Integral a, WordLength a) => a -> [Word32]
 toWordsGen num = unfoldr gen (noWords num)
   where
@@ -122,7 +133,7 @@ toWordsGen num = unfoldr gen (noWords num)
     gen i | i <= 0        = Nothing
           | k <- (i-1)*32 = Just (fromInteger $ (int .&. (0xFFFFFFFF `shiftL` k)) `shiftR` k, i-1)
 
--- | Generic function for obtaining a word from a list of Word32s
+-- | Generic function for obtaining a word from a list of 'Word32's.
 fromWordsGen :: (Num b, WordLength b) => [Word32] -> b
 fromWordsGen ws
   | length ws == noWords result = result
@@ -133,7 +144,8 @@ fromWordsGen ws
 -- * Splitting words in half
 -- ----------------------------------------------------------------------------
 
--- | Split a 2n-long word into two n-long ones
+-- | Partition an unsigned integer consisting of 2*n
+-- bits into two unsigned integers, each of size n.
 class Split a where
   type Half a
   toHalves   :: a -> (Half a, Half a)

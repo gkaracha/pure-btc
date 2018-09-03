@@ -1,6 +1,29 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Hash.RIPEMD160 (ripemd160, ripemd160N, doubleRIPEMD160, test_io_ripemd160, test_ripemd160) where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Hash.RIPEMD160
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Implementation of hashing algorithm RIPEMD160.
+--
+-----------------------------------------------------------------------------
+
+module Hash.RIPEMD160
+( -- * The hashing functions
+  ripemd160
+, ripemd160N
+, doubleRIPEMD160
+
+  -- * Testing (Drop these and write proper tests)
+, test_io_ripemd160
+, test_ripemd160
+) where
 
 -- SOURCE:
 --   https://www.esat.kuleuven.be/cosic/publications/article-56.pdf
@@ -194,16 +217,16 @@ test_ripemd160
 -- * RIPEMD160 Interface
 -- ----------------------------------------------------------------------------
 
--- | Apply the RIPEMD160 algorithm on a bytestring
+-- | Apply the RIPEMD160 hashing algorithm on a 'ByteString'.
 ripemd160 :: ByteString -> ByteString
 ripemd160 = fromBytes . ripemd160ToBytes . ripemd160hash . padRIPEMD160
 
--- | Apply the RIPEMD160 algorithm N times on a bytestring
+-- | Apply the RIPEMD160 hashing algorithm N times on a 'ByteString'.
 ripemd160N :: Int -> ByteString -> ByteString
 ripemd160N n msg | n <= 0    = msg
                  | otherwise = ripemd160N (n-1) (ripemd160 msg)
 
--- | Apply the RIPEMD160 algorithm two times on a bytestring
+-- | Apply the RIPEMD160 hashing algorithm twice on a 'ByteString'.
 doubleRIPEMD160 :: ByteString -> ByteString
 doubleRIPEMD160 = ripemd160 . ripemd160
 

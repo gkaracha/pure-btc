@@ -1,5 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Util.List
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Utility functions operating on lists.
+--
+-----------------------------------------------------------------------------
+
 module Util.List
 ( listChunksOf
 , pairs

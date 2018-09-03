@@ -1,5 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Util.ByteString
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Utility functions operating on ByteStrings.
+--
+-----------------------------------------------------------------------------
+
 module Util.ByteString
 ( bsChunksOf
 ) where

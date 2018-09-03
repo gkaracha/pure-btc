@@ -1,6 +1,20 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Word.Word256
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Unsigned integral type with a size of 256 bits.
+--
+-----------------------------------------------------------------------------
+
 module Data.Word.Word256 (Word256) where
 
 import Data.Bits
@@ -13,9 +27,8 @@ import Data.Word.Partition
 -- * Word256, masks, and utilities
 -- ----------------------------------------------------------------------------
 
+-- | A 'Word256' is an unsigned integral type, with a size of 256 bits.
 newtype Word256 = W256 { w256 :: Integer }
--- TODO: representation as an Integer is not the most efficient but at least
--- keeps things simple. For now.
 
 mask256 :: Integer
 mask256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -100,12 +113,14 @@ instance Split Word256 where
   toHalves   = w256ToW128s
   fromHalves = w128sToW256
 
+-- | Split a 'Word256' into two 'Word128's
 w256ToW128s :: Word256 -> (Word128, Word128)
 w256ToW128s (W256 i) = (pt1,pt2)
   where
     pt1 = fromInteger $ (i .&. mask256L) `rotateR` 128
     pt2 = fromInteger $ (i .&. mask256R)
 
+-- | Combine two 'Word128's into a 'Word256'
 w128sToW256 :: (Word128, Word128) -> Word256
 w128sToW256 (w1,w2) = W256 (pt1 .|. pt2)
   where

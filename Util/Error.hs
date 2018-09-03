@@ -1,5 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Util.Error
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Error functions.
+--
+-----------------------------------------------------------------------------
+
 module Util.Error
 ( toEnumError
 , fromEnumError

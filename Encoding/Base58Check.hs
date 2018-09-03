@@ -1,7 +1,26 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE ScopedTypeVariables #-} -- TODO: Remove
 
-module Encoding.Base58Check where
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Encoding.Base58Check
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Base58Check encoding.
+--
+-----------------------------------------------------------------------------
+
+module Encoding.Base58Check
+( -- * Base58Check encoding
+  encodeBase58Check
+  -- * Base58Check decoding
+, decodeBase58Check
+) where
 
 -- ENCODING SOURCE:
 --   https://en.bitcoin.it/wiki/Base58Check_encoding#Creating_a_Base58Check_string
@@ -10,13 +29,16 @@ import Data.Words
 import Hash.SHA256 (doubleSHA256)
 import Control.Monad (guard)
 import Encoding.Base58 (encodeBase58, decodeBase58)
-import Encoding.Hex (showHex)
+-- import Encoding.Hex (showHex)
 
 -- * Encoding into Base58Check
 -- ----------------------------------------------------------------------------
 
 -- | Base58Check encoding (String)
-encodeBase58Check :: Bytes a => Word8 {- version byte -} -> a {- payload -} -> String
+encodeBase58Check :: Bytes a
+                  => Word8   -- ^ version byte
+                  -> a       -- ^ payload
+                  -> String  -- ^ Base58Check-encoded result
 encodeBase58Check version_byte payload = result
   where
     -- Step 1: Concatenate the version byte and the payload
@@ -54,7 +76,9 @@ leadingEmptyWords x = aux 0 (toBytes x)
 -- ----------------------------------------------------------------------------
 
 -- | Base58Check decoding (String)
-decodeBase58Check :: Bytes a => String -> Maybe (Word8, a, Word32) -- (version byte, data, checksum)
+decodeBase58Check :: Bytes a
+                  => String                   -- ^ Base58Check-encoded input
+                  -> Maybe (Word8, a, Word32) -- ^ (version byte, payload, checksum)
 decodeBase58Check input = do
   -- Step 1: Split it in leading zeros and the rest
   let (leading, rest) = span (=='1') input
@@ -88,33 +112,33 @@ partitionBytes xs = let (front, checksum) = splitAt (length xs - 4) xs
 -- * Testing
 -- ----------------------------------------------------------------------------
 
--- | https://github.com/libbitcoin/libbitcoin-explorer/wiki/bx-base58check-decode
--- | https://bitcoin.stackexchange.com/questions/5671/how-do-you-perform-double-sha-256-encoding
--- | https://en.bitcoin.it/wiki/Base58Check_encoding#Creating_a_Base58Check_string
--- | https://github.com/joeblackwaslike/base58check
--- | https://en.bitcoin.it/wiki/List_of_address_prefixes
--- | https://en.bitcoin.it/wiki/Base58Check_encoding
+--  https://github.com/libbitcoin/libbitcoin-explorer/wiki/bx-base58check-decode
+--  https://bitcoin.stackexchange.com/questions/5671/how-do-you-perform-double-sha-256-encoding
+--  https://en.bitcoin.it/wiki/Base58Check_encoding#Creating_a_Base58Check_string
+--  https://github.com/joeblackwaslike/base58check
+--  https://en.bitcoin.it/wiki/List_of_address_prefixes
+--  https://en.bitcoin.it/wiki/Base58Check_encoding
 
--- || test_print_decode "173RKgkk7fMbYUYBGyyAHeZ6rwfKRMn17h7DtGsmpEdab8TV6UB"
--- || checksum : 1020266843
--- || payload  : 031bab84e687e36514eeaf5a017c30d32c1f59dd4ea6629da7970ca374513dd006
--- || version  : 0
--- ||
--- || test_print_decode "7DTXS6pY6a98XH2oQTZUbbd1Z7P4NzkJqfraixprPutXQVTkwBGw"
--- || checksum : 3840642601
--- || payload  : 031bab84e687e36514eeaf5a017c30d32c1f59dd4ea6629da7970ca374513dd006
--- || version  : 42
--- ||
--- || test_print_decode "12ANjYr7zPnxRdZfnmC2e6jjHDpBY"
--- || checksum : 530125139
--- || payload  : 5361746f736869204e616b616d6f746f
--- || version  : 0
+--  test_print_decode "173RKgkk7fMbYUYBGyyAHeZ6rwfKRMn17h7DtGsmpEdab8TV6UB"
+--  checksum : 1020266843
+--  payload  : 031bab84e687e36514eeaf5a017c30d32c1f59dd4ea6629da7970ca374513dd006
+--  version  : 0
+--
+--  test_print_decode "7DTXS6pY6a98XH2oQTZUbbd1Z7P4NzkJqfraixprPutXQVTkwBGw"
+--  checksum : 3840642601
+--  payload  : 031bab84e687e36514eeaf5a017c30d32c1f59dd4ea6629da7970ca374513dd006
+--  version  : 42
+--
+--  test_print_decode "12ANjYr7zPnxRdZfnmC2e6jjHDpBY"
+--  checksum : 530125139
+--  payload  : 5361746f736869204e616b616d6f746f
+--  version  : 0
 
-test_print_decode :: String -> IO ()
-test_print_decode input = case decodeBase58Check input of
-  Nothing -> putStrLn "This failed :/"
-  Just (vb,msg :: ByteString,checksum) -> do
-    putStrLn ("checksum : " ++ show (revWord32 checksum))
-    putStrLn ("payload  : " ++ showHex msg)
-    putStrLn ("version  : " ++ show vb)
+-- test_print_decode :: String -> IO ()
+-- test_print_decode input = case decodeBase58Check input of
+--   Nothing -> putStrLn "This failed :/"
+--   Just (vb,msg :: ByteString,checksum) -> do
+--     putStrLn ("checksum : " ++ show (revWord32 checksum))
+--     putStrLn ("payload  : " ++ showHex msg)
+--     putStrLn ("version  : " ++ show vb)
 

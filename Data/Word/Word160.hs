@@ -1,5 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Word.Word160
+-- Copyright   :  (c) Georgios Karachalias, 2018
+-- License     :  BSD3
+--
+-- Maintainer  :  gdkaracha@gmail.com
+-- Stability   :  experimental
+-- Portability :  GHC
+--
+-- Unsigned integral type with a size of 160 bits.
+--
+-----------------------------------------------------------------------------
+
 module Data.Word.Word160 (Word160) where
 
 import Data.Bits
@@ -8,14 +22,11 @@ import Data.Ratio ((%))
 import Util.Error (toEnumError, fromEnumError)
 import Data.Word.Partition
 
--- 160 bits == 20 bytes == 40 hex digits == 5 Word32s
-
 -- * Word160, masks, and utilities
 -- ----------------------------------------------------------------------------
 
+-- | A 'Word160' is an unsigned integral type, with a size of 160 bits.
 newtype Word160 = W160 { w160 :: Integer }
--- TODO: representation as an Integer is not the most efficient but at least
--- keeps things simple. For now.
 
 mask160 :: Integer
 mask160 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
